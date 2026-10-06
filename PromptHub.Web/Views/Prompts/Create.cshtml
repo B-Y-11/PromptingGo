@@ -1,0 +1,179 @@
+﻿@model PromptHub.Web.Models.ViewModels.Prompts.CreatePromptViewModel
+
+@{
+    ViewData["Title"] = "Добавить промпт";
+}
+
+<section class="prompt-form-page">
+    <header class="prompt-form-header">
+        <div class="prompt-form-kicker">
+            Новый лист
+        </div>
+
+        <h1 class="prompt-form-title">
+            Добавить промпт
+        </h1>
+
+        <p class="prompt-form-description">
+            Сначала добавьте полностью готовый вариант.
+            При необходимости подключите конструктор,
+            чтобы посетитель мог настроить текст под себя.
+        </p>
+    </header>
+
+    <form asp-controller="Prompts"
+          asp-action="Create"
+          method="post"
+          enctype="multipart/form-data"
+          class="prompt-form-layout">
+
+        <main class="prompt-form-sheet">
+            <partial name="_PromptFormFields"
+                     model="Model" />
+
+            <section class="prompt-form-section prompt-create-media-section">
+                <div class="prompt-form-section-header">
+                    <span class="prompt-form-section-number">
+                        5
+                    </span>
+
+                    <div>
+                        <h2 class="prompt-form-section-title">
+                            Изображения
+                        </h2>
+
+                        <p class="prompt-form-section-description">
+                            При желании добавьте пример результата, инструкцию,
+                            схему или другое полезное изображение.
+                            Это необязательно.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="prompt-create-media-upload">
+                    <label asp-for="Images"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Images"
+                           id="create-prompt-images"
+                           class="form-control"
+                           type="file"
+                           multiple
+                           accept="image/jpeg,image/png,image/webp"
+                           data-max-files="@Model.MaxImagesPerPrompt"
+                           data-max-file-size="@Model.MaxImageSizeBytes" />
+
+                    <span asp-validation-for="Images"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Можно загрузить до @Model.MaxImagesPerPrompt изображений.
+                        JPG, PNG или WebP.
+
+                        Максимальный размер одного файла —
+                        @(Model.MaxImageSizeBytes / 1024 / 1024) МБ.
+
+                        Первое изображение станет обложкой.
+                    </div>
+
+                    <div id="create-prompt-images-error"
+                         class="alert alert-danger d-none"
+                         role="alert">
+                    </div>
+
+                    <div id="create-prompt-images-preview"
+                         class="prompt-create-media-preview"
+                         aria-live="polite">
+                    </div>
+                </div>
+            </section>
+
+            
+            <div class="prompt-form-actions">
+                <p class="prompt-form-actions-note">
+                    После сохранения промпт останется черновиком.
+                    Вы сможете проверить его и отправить на модерацию позже.
+                </p>
+
+                <div class="prompt-form-action-buttons">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Сохранить черновик
+                    </button>
+
+                    <a asp-controller="Prompts"
+                       asp-action="My"
+                       class="btn btn-outline-secondary">
+                        Отмена
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <aside class="prompt-form-sidebar">
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Что публикуем?
+                </h2>
+
+                <p>
+                    Готовый промпт должен работать сразу,
+                    даже если пользователь не станет открывать конструктор.
+                </p>
+            </section>
+
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Хороший промпт
+                </h2>
+
+                <ul class="prompt-form-checklist">
+                    <li class="checked">
+                        Указывает роль нейросети
+                    </li>
+
+                    <li class="checked">
+                        Содержит конкретную задачу
+                    </li>
+
+                    <li>
+                        Описывает формат ответа
+                    </li>
+
+                    <li>
+                        Уточняет ограничения
+                    </li>
+
+                    <li>
+                        Не содержит лишнего текста
+                    </li>
+                </ul>
+            </section>
+
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Не переживайте
+                </h2>
+
+                <p>
+                    До отправки на модерацию черновик
+                    можно редактировать сколько угодно раз.
+                </p>
+            </section>
+        </aside>
+    </form>
+</section>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/prompt-form-editor.js"
+            asp-append-version="true">
+    </script>
+    <script src="~/js/prompt-create-media.js"
+            asp-append-version="true">
+    </script>
+}

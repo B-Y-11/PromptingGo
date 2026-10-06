@@ -1,0 +1,120 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.LoginModel
+@using Microsoft.Extensions.Options
+@using PromptHub.Web.Services.Identity
+@inject IOptions<PhoneAuthenticationFeatureOptions> PhoneAuthenticationOptions
+
+@{
+    ViewData["Title"] = "Вход";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+            <div class="identity-kicker">
+                Возвращение в блокнот
+            </div>
+
+            <h1 class="identity-title">
+                Войти в PromptingGo
+            </h1>
+
+            <p class="identity-description">
+                Продолжите работу со своими промптами,
+                черновиками и публикациями.
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@Model.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           autocomplete="email"
+                           placeholder="name@example.com" />
+
+                    <span asp-validation-for="Input.Email"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.Password"
+                           class="form-control"
+                           autocomplete="current-password"
+                           placeholder="Введите пароль" />
+
+                    <span asp-validation-for="Input.Password"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="identity-form-row">
+                    <div class="form-check">
+                        <input asp-for="Input.RememberMe"
+                               class="form-check-input" />
+
+                        <label asp-for="Input.RememberMe"
+                               class="form-check-label">
+                        </label>
+                    </div>
+
+                    <a asp-page="./ForgotPassword"
+                       class="identity-small-link">
+                        Не помню пароль
+                    </a>
+                </div>
+
+                <partial name="/Views/Shared/_SmartCaptchaWidget.cshtml" />
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Войти
+                </button>
+            </form>
+
+            @if (PhoneAuthenticationOptions.Value.Enabled)
+            {
+                <div class="identity-footer-text">
+                    Или
+    
+                    <a asp-page="./Phone"
+                       asp-route-returnUrl="@Model.ReturnUrl">
+                        войти по номеру телефона
+                    </a>
+                </div>
+            }
+
+            <div class="identity-footer-text">
+                Ещё нет аккаунта?
+
+                <a asp-page="./Register"
+                   asp-route-returnUrl="@Model.ReturnUrl">
+                    Зарегистрироваться
+                </a>
+            </div>
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

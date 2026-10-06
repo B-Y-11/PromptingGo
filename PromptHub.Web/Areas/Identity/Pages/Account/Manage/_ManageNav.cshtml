@@ -1,0 +1,257 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PromptHub.Web.Models.Entities
+@using PromptHub.Web.Security
+
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var currentPage =
+        ViewContext.RouteData.Values["page"]
+            ?.ToString();
+
+    var currentUser =
+        await UserManager.GetUserAsync(
+            User);
+
+    var hasPassword =
+        currentUser is not null &&
+        await UserManager.HasPasswordAsync(
+            currentUser);
+
+    string NavigationClass(
+        string pageName)
+    {
+        return string.Equals(
+            currentPage,
+            pageName,
+            StringComparison.OrdinalIgnoreCase)
+                ? "account-nav-link active"
+                : "account-nav-link";
+    }
+}
+
+<nav class="account-nav-sheet">
+    <div class="account-nav-title">
+        Настройки
+    </div>
+
+    <div class="account-nav-links">
+        <a asp-area="Identity"
+           asp-page="/Account/Manage/Index"
+           class="@NavigationClass("/Account/Manage/Index")">
+
+            <span class="account-nav-number">
+                01
+            </span>
+
+            <span>
+                Профиль
+            </span>
+        </a>
+
+        @if (hasPassword)
+        {
+            <a asp-area="Identity"
+               asp-page="/Account/Manage/ChangePassword"
+               class="@NavigationClass("/Account/Manage/ChangePassword")">
+
+                <span class="account-nav-number">
+                    02
+                </span>
+
+                <span>
+                    Пароль
+                </span>
+            </a>
+        }
+        else
+        {
+            <div class="account-nav-link account-nav-link-disabled"
+                 aria-disabled="true"
+                 title="Сначала добавьте email и пароль в разделе «Способы входа».">
+
+                <span class="account-nav-number">
+                    02
+                </span>
+
+                <span>
+                    Пароль
+                </span>
+            </div>
+        }
+
+        <a asp-area="Identity"
+           asp-page="/Account/Manage/SignInMethods"
+           class="@NavigationClass("/Account/Manage/SignInMethods")">
+
+            <span class="account-nav-number">
+                03
+            </span>
+
+            <span>
+                Способы входа
+            </span>
+        </a>
+
+        <a asp-area="Identity"
+           asp-page="/Account/Manage/AuthorSupport"
+           class="@NavigationClass("/Account/Manage/AuthorSupport")">
+
+            <span class="account-nav-number">
+                04
+            </span>
+
+            <span>
+                Поддержка автора
+            </span>
+        </a>
+    </div>
+
+
+    <div class="account-nav-divider">
+    </div>
+
+    <div class="account-nav-title">
+        Быстрые ссылки
+    </div>
+
+    <div class="account-nav-links">
+        <a asp-controller="Prompts"
+           asp-action="Favorites"
+           asp-area=""
+           class="account-nav-link">
+
+            <span class="account-nav-number">
+                05
+            </span>
+
+            <span>
+                Избранное
+            </span>
+        </a>
+
+        <a asp-controller="Notifications"
+           asp-action="Index"
+           asp-area=""
+           class="account-nav-link">
+
+            <span class="account-nav-number">
+                06
+            </span>
+
+            <span class="account-nav-text-with-badge">
+                Уведомления
+
+                @await Component.InvokeAsync("NotificationBadge")
+            </span>
+        </a>
+
+        <a asp-controller="Prompts"
+           asp-action="My"
+           asp-area=""
+           class="account-nav-link">
+
+            <span class="account-nav-number">
+                07
+            </span>
+
+            <span>
+                Мои промпты
+            </span>
+        </a>
+
+        <a asp-controller="Prompts"
+           asp-action="Create"
+           asp-area=""
+           class="account-nav-link">
+
+            <span class="account-nav-number">
+                08
+            </span>
+
+            <span>
+                Новый промпт
+            </span>
+        </a>
+
+        @if (User.IsInRole(
+            ApplicationRoles.Administrator))
+        {
+            <a asp-controller="Admin"
+               asp-action="Users"
+               asp-area=""
+               class="account-nav-link">
+
+                <span class="account-nav-number">
+                    09
+                </span>
+
+                <span>
+                    Пользователи
+                </span>
+            </a>
+
+            <a asp-controller="Admin"
+               asp-action="Categories"
+               asp-area=""
+               class="account-nav-link">
+
+                <span class="account-nav-number">
+                    10
+                </span>
+
+                <span>
+                    Категории
+                </span>
+            </a>
+        }
+
+        @if (User.IsInRole(
+                ApplicationRoles.Administrator) ||
+            User.IsInRole(
+                ApplicationRoles.Moderator))
+        {
+            <a asp-controller="Moderation"
+               asp-action="Dashboard"
+               asp-area=""
+               class="account-nav-link">
+
+                @if (User.IsInRole(
+                    ApplicationRoles.Administrator))
+                {
+                    <span class="account-nav-number">
+                        11
+                    </span>
+                }
+                else
+                {
+                    <span class="account-nav-number">
+                        09
+                    </span>
+                }
+
+                <span>
+                    Модерация
+                </span>
+            </a>
+
+            @if (User.IsInRole(
+                ApplicationRoles.Administrator))
+            {
+                <a asp-controller="Admin"
+                   asp-action="Tags"
+                   asp-area=""
+                   class="account-nav-link">
+
+                    <span class="account-nav-number">
+                        12
+                    </span>
+
+                    <span>
+                        Теги
+                    </span>
+                </a>
+            }
+        }
+    </div>
+</nav>

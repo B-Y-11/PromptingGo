@@ -1,0 +1,272 @@
+@model PromptHub.Web.Models.ViewModels.Navigation.CatalogToolbarViewModel
+
+@{
+    var clearTagUrl =
+        Url.RouteUrl(
+            "PromptsCatalog",
+            new
+            {
+                search =
+                    string.IsNullOrWhiteSpace(Model.Search)
+                        ? null
+                        : Model.Search,
+
+                category =
+                    string.IsNullOrWhiteSpace(Model.Category)
+                        ? null
+                        : Model.Category,
+
+                difficulty =
+                    string.IsNullOrWhiteSpace(Model.Difficulty)
+                        ? null
+                        : Model.Difficulty,
+
+                sort =
+                    Model.HasCustomSort
+                        ? Model.Sort
+                        : null
+            });
+}
+
+<div class="navbar-catalog-tools">
+    <form action="@Url.RouteUrl("PromptsCatalog")"
+          method="get"
+          class="navbar-prompt-search"
+          role="search"
+          aria-label="Поиск промптов">
+
+        <label for="navbarPromptSearch"
+               class="visually-hidden">
+            Поиск промптов
+        </label>
+
+        <input id="navbarPromptSearch"
+               name="search"
+               value="@Model.Search"
+               maxlength="200"
+               autocomplete="off"
+               class="form-control navbar-prompt-search-input"
+               placeholder="Найти промпт..." />
+
+        <button type="submit"
+                class="btn btn-primary navbar-prompt-search-button"
+                aria-label="Найти">
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true"
+                 focusable="false">
+                <circle cx="11"
+                        cy="11"
+                        r="6.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2" />
+                <path d="M16 16l4.2 4.2"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round" />
+            </svg>
+        </button>
+    </form>
+
+    <details class="navbar-filter-menu">
+        <summary class="btn btn-outline-primary navbar-filter-trigger"
+                 title="Фильтры каталога"
+                 aria-label="Фильтры каталога">
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true"
+                 focusable="false">
+                <path d="M4 6h16M7 12h10M10 18h4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round" />
+            </svg>
+
+            @if (Model.ActiveFilterCount > 0)
+            {
+                <span class="navbar-filter-count">
+                    @Model.ActiveFilterCount
+                </span>
+            }
+        </summary>
+
+        <div class="navbar-filter-popover">
+            <div class="navbar-filter-heading-row">
+                <div>
+                    <div class="navbar-filter-kicker">
+                        Каталог
+                    </div>
+
+                    <div class="navbar-filter-heading">
+                        Фильтры
+                    </div>
+                </div>
+
+                @if (Model.HasCatalogParameters)
+                {
+                    <a href="@Url.RouteUrl("PromptsCatalog")"
+                       class="navbar-filter-reset">
+                        Сбросить всё
+                    </a>
+                }
+            </div>
+
+            <form action="@Url.RouteUrl("PromptsCatalog")"
+                  method="get"
+                  class="navbar-filter-form">
+
+                @if (!string.IsNullOrWhiteSpace(Model.Search))
+                {
+                    <input type="hidden"
+                           name="search"
+                           value="@Model.Search" />
+                }
+
+                @if (Model.HasTag)
+                {
+                    <input type="hidden"
+                           name="tag"
+                           value="@Model.Tag" />
+                }
+
+                <div class="navbar-filter-field">
+                    <label for="navbarCatalogCategory"
+                           class="navbar-filter-label">
+                        Категория
+                    </label>
+
+                    <select id="navbarCatalogCategory"
+                            name="category"
+                            class="form-select">
+                        <option value="">
+                            Все категории
+                        </option>
+
+                        @foreach (var category in Model.Categories)
+                        {
+                            if (string.Equals(
+                                    category.Slug,
+                                    Model.Category,
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option value="@category.Slug"
+                                        selected>
+                                    @category.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@category.Slug">
+                                    @category.Name
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="navbar-filter-field">
+                    <label for="navbarCatalogDifficulty"
+                           class="navbar-filter-label">
+                        Сложность
+                    </label>
+
+                    <select id="navbarCatalogDifficulty"
+                            name="difficulty"
+                            class="form-select">
+                        <option value=""
+                                selected="@(string.IsNullOrWhiteSpace(Model.Difficulty))">
+                            Любая сложность
+                        </option>
+
+                        <option value="beginner"
+                                selected="@(Model.Difficulty == "beginner")">
+                            Для новичков
+                        </option>
+
+                        <option value="intermediate"
+                                selected="@(Model.Difficulty == "intermediate")">
+                            Средний
+                        </option>
+
+                        <option value="advanced"
+                                selected="@(Model.Difficulty == "advanced")">
+                            Продвинутый
+                        </option>
+                    </select>
+                </div>
+
+                @if (Model.HasTag)
+                {
+                    <div class="navbar-filter-tag-row">
+                        <div>
+                            <div class="navbar-filter-label">
+                                Тег
+                            </div>
+
+                            <span class="prompt-tag-badge">
+                                #@Model.TagName
+                            </span>
+                        </div>
+
+                        <a href="@clearTagUrl"
+                           class="navbar-filter-reset">
+                            Убрать
+                        </a>
+                    </div>
+                }
+
+                <div class="navbar-filter-field">
+                    <label for="navbarCatalogSort"
+                           class="navbar-filter-label">
+                        Сначала
+                    </label>
+
+                    <select id="navbarCatalogSort"
+                            name="sort"
+                            class="form-select">
+                        <option value=""
+                                selected="@(Model.Sort == Model.DefaultSort)">
+                            @(string.IsNullOrWhiteSpace(Model.Search)
+                                ? "Новые"
+                                : "По релевантности")
+                        </option>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Search))
+                        {
+                            <option value="newest"
+                                    selected="@(Model.Sort == "newest")">
+                                Новые
+                            </option>
+                        }
+
+                        <option value="popular"
+                                selected="@(Model.Sort == "popular")">
+                            Популярные
+                        </option>
+
+                        <option value="rating"
+                                selected="@(Model.Sort == "rating")">
+                            Лучшие по оценке
+                        </option>
+
+                        <option value="viewed"
+                                selected="@(Model.Sort == "viewed")">
+                            Просматриваемые
+                        </option>
+
+                        <option value="oldest"
+                                selected="@(Model.Sort == "oldest")">
+                            Старые
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary navbar-filter-apply">
+                    Применить
+                </button>
+            </form>
+        </div>
+    </details>
+</div>

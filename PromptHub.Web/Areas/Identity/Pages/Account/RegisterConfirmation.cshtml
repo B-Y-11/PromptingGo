@@ -1,0 +1,59 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.RegisterConfirmationModel
+
+@{
+    ViewData["Title"] = "Подтвердите email";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+            <div class="identity-kicker">
+                Аккаунт создан
+            </div>
+
+            <h1 class="identity-title">
+                Подтвердите email
+            </h1>
+
+            <p class="identity-description">
+                Мы отправили ссылку подтверждения на указанный адрес.
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.Email))
+                {
+                    <strong>
+                        @Model.Email
+                    </strong>
+                }
+            </p>
+
+            @if (Model.DeliveryFailed)
+            {
+                <div class="alert alert-warning">
+                    Аккаунт создан, но письмо сейчас отправить не удалось.
+                    Попробуйте запросить новую ссылку подтверждения.
+                </div>
+            }
+
+            <div class="identity-password-note">
+                Проверьте папки «Входящие» и «Спам».
+                Письмо и ссылка действуют ограниченное время.
+            </div>
+
+            <div class="d-grid gap-2">
+                <a asp-page="./Login"
+                   asp-route-returnUrl="@Model.ReturnUrl"
+                   class="btn btn-primary identity-submit-button">
+                    Перейти ко входу
+                </a>
+
+                <a asp-page="./ResendEmailConfirmation"
+                   class="btn btn-outline-secondary">
+                    Отправить ссылку повторно
+                </a>
+            </div>
+        </main>
+    </div>
+</section>

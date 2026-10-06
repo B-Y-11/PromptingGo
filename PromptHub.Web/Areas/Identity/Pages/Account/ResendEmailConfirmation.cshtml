@@ -1,0 +1,68 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.ResendEmailConfirmationModel
+
+@{
+    ViewData["Title"] = "Повторная отправка";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+            <div class="identity-kicker">
+                Подтверждение аккаунта
+            </div>
+
+            <h1 class="identity-title">
+                Отправить ссылку повторно
+            </h1>
+
+            <p class="identity-description">
+                Укажите email, использованный при регистрации.
+                Если неподтверждённый аккаунт существует,
+                мы отправим новую ссылку.
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Input.Email"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           autocomplete="email"
+                           placeholder="name@example.com" />
+
+                    <span asp-validation-for="Input.Email"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <partial name="/Views/Shared/_SmartCaptchaWidget.cshtml" />
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Отправить ссылку
+                </button>
+            </form>
+
+            <div class="identity-footer-text">
+                <a asp-page="./Login">
+                    Вернуться ко входу
+                </a>
+            </div>
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

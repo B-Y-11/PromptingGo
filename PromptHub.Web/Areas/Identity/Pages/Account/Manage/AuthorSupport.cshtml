@@ -1,0 +1,248 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.Manage.AuthorSupportModel
+
+@{
+    ViewData["Title"] =
+        "Поддержка автора";
+
+    Layout =
+        "_ManageLayout";
+}
+
+<section class="account-content-sheet author-support-settings">
+    <header class="account-section-header">
+        <div>
+            <div class="account-section-kicker">
+                Страница 04
+            </div>
+
+            <h2>
+                Поддержка автора
+            </h2>
+
+            <p>
+                Разрешите читателям добровольно
+                поблагодарить вас, если ваш промпт
+                оказался полезным.
+            </p>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(
+        Model.StatusMessage))
+    {
+        <div class="alert alert-success">
+            @Model.StatusMessage
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <div class="author-support-intro">
+        <div class="author-support-intro-mark">
+            ₽
+        </div>
+
+        <div>
+            <h3>
+                Деньги идут напрямую вам
+            </h3>
+
+            <p>
+                PromptingGo не принимает деньги
+                и не хранит банковские данные.
+                Посетитель выбирает способ поддержки,
+                после чего оплата выполняется
+                на стороне выбранного сервиса.
+            </p>
+        </div>
+    </div>
+
+    <form method="post"
+          class="author-support-form">
+
+        <div class="author-support-methods">
+
+            <section class="author-support-method-card">
+                <header class="author-support-method-header">
+                    <div>
+                        <div class="author-support-method-provider">
+                            CloudTips
+                        </div>
+
+                        <h3>
+                            Чаевые и донаты
+                        </h3>
+                    </div>
+
+                    <span class="author-support-provider-badge">
+                        CT
+                    </span>
+                </header>
+
+                <p class="author-support-method-description">
+                    Создайте персональную страницу
+                    CloudTips и вставьте сюда ссылку,
+                    которую сервис выдаст вам.
+                </p>
+
+                <div class="mb-3">
+                    <label asp-for="Input.CloudTipsUrl"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.CloudTipsUrl"
+                           class="form-control"
+                           autocomplete="off"
+                           placeholder="https://pay.cloudtips.ru/p/..." />
+
+                    <span asp-validation-for="Input.CloudTipsUrl"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Принимается только официальная
+                        персональная ссылка CloudTips.
+                    </div>
+                </div>
+
+                <div class="form-check author-support-enabled">
+                    <input asp-for="Input.CloudTipsEnabled"
+                           class="form-check-input" />
+
+                    <label asp-for="Input.CloudTipsEnabled"
+                           class="form-check-label">
+                        Показывать CloudTips посетителям
+                    </label>
+                </div>
+
+                <a href="https://lk.cloudtips.ru"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="author-support-external-link">
+                    Открыть CloudTips ↗
+                </a>
+            </section>
+
+
+            <section class="author-support-method-card">
+                <header class="author-support-method-header">
+                    <div>
+                        <div class="author-support-method-provider">
+                            ЮMoney
+                        </div>
+
+                        <h3>
+                            Перевод на кошелёк
+                        </h3>
+                    </div>
+
+                    <span class="author-support-provider-badge">
+                        Ю
+                    </span>
+                </header>
+
+                <p class="author-support-method-description">
+                    Укажите номер своего кошелька ЮMoney.
+                    Он понадобится PromptingGo,
+                    чтобы сформировать перевод
+                    непосредственно вам.
+                </p>
+
+                <div class="mb-3">
+                    <label asp-for="Input.YooMoneyWallet"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.YooMoneyWallet"
+                           class="form-control"
+                           inputmode="numeric"
+                           autocomplete="off"
+                           placeholder="4100..." />
+
+                    <span asp-validation-for="Input.YooMoneyWallet"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Номер кошелька начинается с 4100.
+                        Номер банковской карты сюда вводить не нужно.
+                    </div>
+                </div>
+
+                <div class="form-check author-support-enabled">
+                    <input asp-for="Input.YooMoneyEnabled"
+                           class="form-check-input" />
+
+                    <label asp-for="Input.YooMoneyEnabled"
+                           class="form-check-label">
+                        Показывать ЮMoney посетителям
+                    </label>
+                </div>
+
+                <a href="https://yoomoney.ru"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="author-support-external-link">
+                    Открыть ЮMoney ↗
+                </a>
+            </section>
+
+        </div>
+
+        <div class="author-support-note">
+            <div class="author-support-note-label">
+                Можно оба
+            </div>
+
+            <div>
+                <strong>
+                    Необязательно выбирать один сервис
+                </strong>
+
+                <p>
+                    Можно подключить CloudTips,
+                    ЮMoney или сразу оба варианта.
+                    Посетитель сам выберет,
+                    каким способом ему удобнее
+                    поддержать вас.
+                </p>
+            </div>
+        </div>
+
+        <div class="author-support-note">
+            <div class="author-support-note-label">
+                Как это работает
+            </div>
+
+            <div>
+                <strong>
+                    Поддержка — это способ поблагодарить автора
+                </strong>
+
+                <p>
+                    Посетитель сам выбирает,
+                    хочет ли он поддержать вас,
+                    какую сумму отправить
+                    и каким платёжным сервисом воспользоваться.
+                    На доступность и работу ваших промптов
+                    это никак не влияет.
+                </p>
+            </div>
+        </div>
+
+        <div class="author-support-form-actions">
+            <button type="submit"
+                    class="btn btn-primary">
+                Сохранить настройки
+            </button>
+        </div>
+    </form>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

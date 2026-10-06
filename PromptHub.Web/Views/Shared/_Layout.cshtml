@@ -1,0 +1,444 @@
+﻿@using PromptHub.Web.Security
+@using Microsoft.Extensions.Options
+@using PromptHub.Web.Configuration
+@inject IOptions<LegalOptions> LegalOptionsAccessor
+
+@{
+    var currentController =
+        ViewContext.RouteData.Values["controller"]
+            ?.ToString();
+
+    var currentAction =
+        ViewContext.RouteData.Values["action"]
+            ?.ToString();
+
+    var contactEmail =
+    LegalOptionsAccessor.Value.ContactEmail;
+
+    var pageTitle =
+ViewData["Title"]
+?.ToString()
+?.Trim();
+
+    var documentTitle =
+        string.IsNullOrWhiteSpace(
+            pageTitle)
+            ? "PromptingGo — каталог готовых промптов"
+            : $"{pageTitle} — PromptingGo";
+
+    var metaDescription =
+        ViewData["MetaDescription"]
+            ?.ToString()
+            ?.Trim();
+
+    var robots =
+        ViewData["Robots"]
+            ?.ToString()
+            ?.Trim()
+        ?? "noindex,follow";
+
+    var canonicalUrl =
+        ViewData["CanonicalUrl"]
+            ?.ToString()
+            ?.Trim();
+
+    var ogType =
+        ViewData["OgType"]
+            ?.ToString()
+            ?.Trim()
+        ?? "website";
+
+    var jsonLd =
+    ViewData["JsonLd"]
+        ?.ToString();
+
+
+    var socialImageUrl =
+    ViewData["SocialImageUrl"]
+        ?.ToString()
+        ?.Trim();
+
+    var socialImageAlt =
+        ViewData["SocialImageAlt"]
+            ?.ToString()
+            ?.Trim();
+
+
+    string NavigationClass(
+        string controller,
+        string? action = null)
+    {
+        var controllerMatches =
+            string.Equals(
+                currentController,
+                controller,
+                StringComparison.OrdinalIgnoreCase);
+
+        var actionMatches =
+            action is null ||
+            string.Equals(
+                currentAction,
+                action,
+                StringComparison.OrdinalIgnoreCase);
+
+        return controllerMatches && actionMatches
+            ? "nav-link active"
+            : "nav-link";
+    }
+
+    var catalogNavigationClass =
+        string.Equals(
+            currentController,
+            "Prompts",
+            StringComparison.OrdinalIgnoreCase) &&
+        (
+            string.Equals(
+                currentAction,
+                "Index",
+                StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(
+                currentAction,
+                "Tags",
+                StringComparison.OrdinalIgnoreCase)
+        )
+            ? "nav-link active"
+            : "nav-link";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@documentTitle</title>
+
+    <link rel="icon"
+          href="~/favicon.ico"
+          type="image/x-icon" />
+
+    <meta name="robots"
+          content="@robots" />
+
+    @if (!string.IsNullOrWhiteSpace(
+            metaDescription))
+    {
+        <meta name="description"
+              content="@metaDescription" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(
+            canonicalUrl))
+    {
+        <link rel="canonical"
+              href="@canonicalUrl" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(
+        socialImageUrl))
+    {
+        <meta property="og:image"
+              content="@socialImageUrl" />
+
+        @if (!string.IsNullOrWhiteSpace(
+                socialImageAlt))
+        {
+            <meta property="og:image:alt"
+                  content="@socialImageAlt" />
+        }
+    }
+
+    <meta property="og:site_name"
+          content="PromptingGo" />
+
+    <meta property="og:locale"
+          content="ru_RU" />
+
+    <meta property="og:type"
+          content="@ogType" />
+
+    <meta property="og:title"
+          content="@documentTitle" />
+
+    @if (!string.IsNullOrWhiteSpace(
+            metaDescription))
+    {
+        <meta property="og:description"
+              content="@metaDescription" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(
+            canonicalUrl))
+    {
+        <meta property="og:url"
+              content="@canonicalUrl" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(
+        jsonLd))
+    {
+        <script type="application/ld+json">
+                @Html.Raw(jsonLd)
+        </script>
+    }
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/PromptHub.Web.styles.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/css/notebook.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/css/catalog-toolbar.css"
+          asp-append-version="true" />
+
+    @await RenderSectionAsync(
+        "Styles",
+        required: false)
+</head>
+
+<body>
+    <header>
+        <nav class="navbar
+            navbar-expand-lg
+            app-navbar">
+
+            <div class="app-container">
+                <a class="app-brand"
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    <span class="app-brand-mark">
+                        PG
+                    </span>
+
+                    <span>
+                        PromptingGo
+                    </span>
+                </a>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavigation"
+                        aria-controls="mainNavigation"
+                        aria-expanded="false"
+                        aria-label="Открыть меню">
+
+                    <span class="navbar-toggler-icon">
+                    </span>
+                </button>
+
+                <div id="mainNavigation"
+                     class="collapse navbar-collapse">
+
+                    <ul class="navbar-nav
+                        me-auto
+                        ms-lg-4
+                        gap-lg-1">
+
+                        <li class="nav-item">
+                            <a class="@NavigationClass("Home", "Index")"
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Главная
+                            </a>
+                        </li>
+
+                        <li class="nav-item catalog-nav-item">
+                            <a class="@catalogNavigationClass catalog-nav-main-link"
+                               asp-route="PromptsCatalog">
+                                Каталог
+                            </a>
+
+                            @await Component.InvokeAsync(
+                                "CatalogNavigation")
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="@NavigationClass(
+                                                                                                  "Prompts",
+                                                                                                  "Favorites")"
+                               asp-controller="Prompts"
+                               asp-action="Favorites">
+                                Избранное
+                            </a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+
+                            <li class="nav-item">
+                                <a class="@NavigationClass(
+                                                                                                              "Notifications",
+                                                                                                              "Index") notification-nav-link"
+                                   asp-controller="Notifications"
+                                   asp-action="Index">
+                                    <span>
+                                        Уведомления
+                                    </span>
+
+                                    @await Component.InvokeAsync("NotificationBadge")
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="@NavigationClass("Prompts", "My")"
+                                   asp-controller="Prompts"
+                                   asp-action="My">
+                                    Мои промпты
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="@NavigationClass("Prompts", "Create")"
+                                   asp-controller="Prompts"
+                                   asp-action="Create">
+                                    Добавить промпт
+                                </a>
+                            </li>
+
+                            @if (User.IsInRole(
+                                    ApplicationRoles.Moderator) ||
+                                 User.IsInRole(
+                                    ApplicationRoles.Administrator))
+                            {
+                                <li class="nav-item">
+                                    <a class="@NavigationClass("Moderation")"
+                                       asp-controller="Moderation"
+                                       asp-action="Dashboard">
+                                        Модерация
+                                    </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole(ApplicationRoles.Administrator))
+                            {
+                                var isAdminSection =
+                                    string.Equals(
+                                        ViewContext.RouteData.Values["controller"]?.ToString(),
+                                        "Admin",
+                                        StringComparison.OrdinalIgnoreCase);
+
+                                <li class="nav-item admin-nav-item">
+                                    <button type="button"
+                                            class="nav-link admin-nav-toggle @(isAdminSection ? "active" : string.Empty)"
+                                            aria-expanded="false">
+                                        Админка
+                                    </button>
+
+                                    <div class="admin-nav-menu">
+                                        <a asp-controller="Admin"
+                                           asp-action="Users"
+                                           class="admin-nav-menu-link">
+                                            Пользователи
+                                        </a>
+
+                                        <a asp-controller="Admin"
+                                           asp-action="Categories"
+                                           class="admin-nav-menu-link">
+                                            Категории
+                                        </a>
+
+                                        <a asp-controller="Admin"
+                                           asp-action="Tags"
+                                           class="admin-nav-menu-link">
+                                            Теги
+                                        </a>
+                                    </div>
+                                </li>
+                            }
+                        }
+                    </ul>
+
+                    @await Component.InvokeAsync("CatalogToolbar")
+
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="app-main">
+        <div class="app-container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="app-container app-footer-content">
+            <div>
+                © @DateTime.UtcNow.Year PromptingGo
+            </div>
+
+            <nav class="d-flex
+                flex-wrap
+                gap-3"
+                 aria-label="Ссылки в подвале">
+
+                <a asp-route="HelpIndex">
+                    Помощь
+                </a>
+
+                @if (!string.IsNullOrWhiteSpace(contactEmail))
+                {
+                    <a href="mailto:@contactEmail">
+                        Контакты
+                    </a>
+                }
+
+                <a asp-route="LegalTerms">
+                    Пользовательское соглашение
+                </a>
+
+                <a asp-route="LegalPrivacy">
+                    Конфиденциальность
+                </a>
+
+                <a asp-route="LegalContentRules">
+                    Правила публикации
+                </a>
+
+                <a href="@Url.RouteUrl("LegalCookies")">
+                    Настройки cookie
+                </a>
+            </nav>
+        </div>
+    </footer>
+
+    <partial name="_CookieConsent" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js">
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true">
+    </script>
+
+    <script src="~/js/favorites.js"
+            asp-append-version="true">
+    </script>
+
+    <script src="~/js/ratings.js"
+            asp-append-version="true">
+    </script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
+</body>
+</html>

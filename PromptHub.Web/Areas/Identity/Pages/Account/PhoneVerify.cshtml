@@ -1,0 +1,79 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.PhoneVerifyModel
+
+@{
+    ViewData["Title"] = "Подтверждение телефона";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+
+            <div class="identity-kicker">
+                Подтверждение номера
+            </div>
+
+            <h1 class="identity-title">
+                Введите код
+            </h1>
+
+            <p class="identity-description">
+                Код отправлен на номер
+                @Model.MaskedPhoneNumber
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <input asp-for="ChallengeId"
+                       type="hidden" />
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@Model.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Code"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.Code"
+                           class="form-control"
+                           inputmode="numeric"
+                           autocomplete="one-time-code"
+                           maxlength="6"
+                           placeholder="123456" />
+
+                    <span asp-validation-for="Input.Code"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Подтвердить
+                </button>
+            </form>
+
+            <div class="identity-footer-text">
+                Не получили код?
+
+                <a asp-page="./Phone"
+                   asp-route-returnUrl="@Model.ReturnUrl">
+                    Запросить новый
+                </a>
+            </div>
+
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

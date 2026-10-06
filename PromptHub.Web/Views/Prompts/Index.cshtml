@@ -1,0 +1,795 @@
+@using System.Linq
+@model PromptHub.Web.Models.ViewModels.Prompts.PromptCatalogViewModel
+
+@{
+    ViewData["Title"] = "Каталог промптов";
+
+    var hasSearch =
+        !string.IsNullOrWhiteSpace(
+            Model.Search);
+
+    var hasCategory =
+        !string.IsNullOrWhiteSpace(
+            Model.Category);
+
+    var hasTag =
+        !string.IsNullOrWhiteSpace(
+            Model.Tag);
+
+    var hasDifficulty =
+        !string.IsNullOrWhiteSpace(
+            Model.Difficulty);
+
+    var paginationRouteName =
+    hasCategory &&
+    !hasTag
+        ? "PromptsCategory"
+        : hasTag &&
+          !hasCategory
+            ? "PromptsTag"
+            : "PromptsCatalog";
+
+    var defaultSort =
+        string.IsNullOrWhiteSpace(
+            Model.Search)
+            ? "newest"
+            : "relevance";
+
+    var paginationSort =
+        string.Equals(
+            Model.Sort,
+            defaultSort,
+            StringComparison.OrdinalIgnoreCase)
+            ? null
+            : Model.Sort;
+
+    var hasCustomSort =
+        !string.Equals(
+            Model.Sort,
+            defaultSort,
+            StringComparison.OrdinalIgnoreCase);
+
+    var hasMultipleSeoFilters =
+        hasCategory &&
+        hasTag;
+
+    // -------------------------------------------------------------------------
+    // EN: Normal pagination is indexable.
+    //     Search, difficulty, sorting and combined category+tag filters are not.
+    //
+    // RU: Обычная пагинация индексируется.
+    //     Поиск, сложность, сортировки и сочетание category+tag — нет.
+    // -------------------------------------------------------------------------
+
+    var isIndexableCatalogPage =
+        !hasSearch &&
+        !hasDifficulty &&
+        !hasCustomSort &&
+        !hasMultipleSeoFilters;
+
+    var selectedCategory =
+        hasCategory
+            ? Model.Categories
+                .FirstOrDefault(category =>
+                    category.Slug ==
+                        Model.Category)
+            : null;
+
+
+    var pageSuffix =
+    Model.Page > 1
+        ? $" — страница {Model.Page}"
+        : string.Empty;
+
+    var descriptionPageSuffix =
+        Model.Page > 1
+            ? $" Страница {Model.Page}."
+            : string.Empty;
+
+    var catalogHeading =
+        "Каталог готовых промптов";
+
+    var catalogIntro =
+        "Готовые промпты для ChatGPT и других нейросетей. Выберите подходящий вариант или настройте его под свою задачу.";
+
+    if (isIndexableCatalogPage)
+    {
+        ViewData["Robots"] =
+            "index,follow";
+
+        if (selectedCategory is not null)
+        {
+            catalogHeading =
+                $"Промпты в категории «{selectedCategory.Name}»";
+
+            catalogIntro =
+                $"Готовые промпты категории «{selectedCategory.Name}». Выберите подходящую инструкцию и используйте её сразу или настройте под свою задачу.";
+
+            ViewData["Title"] =
+                $"Промпты в категории «{selectedCategory.Name}»{pageSuffix}";
+
+            ViewData["MetaDescription"] =
+                $"Готовые промпты в категории «{selectedCategory.Name}» для ChatGPT и других нейросетей. Выбирайте и настраивайте промпты под свою задачу.{descriptionPageSuffix}";
+
+            ViewData["CanonicalUrl"] =
+                Url.RouteUrl(
+                    "PromptsCategory",
+                    new
+                    {
+                        category =
+                            selectedCategory.Slug,
+
+                        page =
+                            Model.Page > 1
+                                ? Model.Page
+                                : (int?)null
+                    },
+                    protocol:
+                        Context.Request.Scheme,
+                    host:
+                        Context.Request.Host.Value);
+        }
+        else if (hasTag)
+        {
+            catalogHeading =
+                $"Промпты по тегу «{Model.TagName}»";
+
+            catalogIntro =
+                $"Подборка готовых промптов с тегом «{Model.TagName}». Откройте подходящий промпт, скопируйте его или настройте под свою задачу.";
+
+            ViewData["Title"] =
+                $"Промпты по тегу «{Model.TagName}»{pageSuffix}";
+
+            ViewData["MetaDescription"] =
+                $"Готовые промпты по тегу «{Model.TagName}» для ChatGPT и других нейросетей. Найдите подходящий вариант для своей задачи.{descriptionPageSuffix}";
+
+            ViewData["CanonicalUrl"] =
+                Url.RouteUrl(
+                    "PromptsTag",
+                    new
+                    {
+                        tag =
+                            Model.Tag,
+
+                        page =
+                            Model.Page > 1
+                                ? Model.Page
+                                : (int?)null
+                    },
+                    protocol:
+                        Context.Request.Scheme,
+                    host:
+                        Context.Request.Host.Value);
+        }
+        else
+        {
+            catalogHeading =
+                "Каталог готовых промптов";
+
+            catalogIntro =
+                "Готовые промпты для ChatGPT и других нейросетей. Используйте поиск, категории и теги, чтобы найти подходящий вариант.";
+
+            ViewData["Title"] =
+                $"Каталог готовых промптов{pageSuffix}";
+
+            ViewData["MetaDescription"] =
+                $"Каталог готовых промптов для ChatGPT и других нейросетей. Поиск по задачам, категориям и тегам.{descriptionPageSuffix}";
+
+            ViewData["CanonicalUrl"] =
+                Url.RouteUrl(
+                    "PromptsCatalog",
+                    new
+                    {
+                        page =
+                            Model.Page > 1
+                                ? Model.Page
+                                : (int?)null
+                    },
+                    protocol:
+                        Context.Request.Scheme,
+                    host:
+                        Context.Request.Host.Value);
+        }
+    }
+    else
+    {
+        ViewData["Robots"] =
+            "noindex,follow";
+
+        // ---------------------------------------------------------------------
+        // EN: Service/filter pages still receive useful titles for people,
+        //     even though they are not search landing pages.
+        //
+        // RU: Служебные страницы фильтрации получают понятные заголовки
+        //     для пользователя, хотя мы не продвигаем их в поиске.
+        // ---------------------------------------------------------------------
+
+        if (hasSearch)
+        {
+            catalogHeading =
+                $"Результаты поиска «{Model.Search}»";
+
+            catalogIntro =
+                "Промпты, найденные по вашему запросу.";
+
+            ViewData["Title"] =
+                $"Поиск промптов: {Model.Search}";
+        }
+        else
+        {
+            catalogHeading =
+                "Подборка промптов";
+
+            catalogIntro =
+                "Промпты, соответствующие выбранным фильтрам.";
+
+            ViewData["Title"] =
+                "Подборка промптов";
+        }
+    }
+    if (isIndexableCatalogPage)
+    {
+        var currentUrl =
+            ViewData["CanonicalUrl"]
+                ?.ToString();
+
+        var homeUrl =
+            Url.Action(
+                "Index",
+                "Home",
+                values: null,
+                protocol:
+                    Context.Request.Scheme,
+                host:
+                    Context.Request.Host.Value);
+
+        var catalogUrl =
+            Url.RouteUrl(
+                "PromptsCatalog",
+                values: null,
+                protocol:
+                    Context.Request.Scheme,
+                host:
+                    Context.Request.Host.Value);
+
+        var breadcrumbItems =
+            new List<object>
+            {
+            new Dictionary<string, object?>
+            {
+                ["@type"] =
+                    "ListItem",
+
+                ["position"] =
+                    1,
+
+                ["name"] =
+                    "Главная",
+
+                ["item"] =
+                    homeUrl
+            },
+
+            new Dictionary<string, object?>
+            {
+                ["@type"] =
+                    "ListItem",
+
+                ["position"] =
+                    2,
+
+                ["name"] =
+                    "Каталог промптов",
+
+                ["item"] =
+                    catalogUrl
+            }
+            };
+
+        if (selectedCategory is not null)
+        {
+            breadcrumbItems.Add(
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        3,
+
+                    ["name"] =
+                        selectedCategory.Name,
+
+                    ["item"] =
+                        currentUrl
+                });
+        }
+        else if (hasTag)
+        {
+            breadcrumbItems.Add(
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        3,
+
+                    ["name"] =
+                        $"Тег: {Model.TagName}",
+
+                    ["item"] =
+                        currentUrl
+                });
+        }
+
+        var collectionPage =
+            new Dictionary<string, object?>
+            {
+                ["@type"] =
+                    "CollectionPage",
+
+                ["@id"] =
+                    $"{currentUrl}#webpage",
+
+                ["url"] =
+                    currentUrl,
+
+                ["name"] =
+                    ViewData["Title"]
+                        ?.ToString(),
+
+                ["description"] =
+                    ViewData["MetaDescription"]
+                        ?.ToString()
+            };
+
+        var breadcrumbs =
+            new Dictionary<string, object?>
+            {
+                ["@type"] =
+                    "BreadcrumbList",
+
+                ["@id"] =
+                    $"{currentUrl}#breadcrumb",
+
+                ["itemListElement"] =
+                    breadcrumbItems
+            };
+
+        collectionPage["breadcrumb"] =
+            new Dictionary<string, object?>
+            {
+                ["@id"] =
+                    $"{currentUrl}#breadcrumb"
+            };
+
+        var jsonLd =
+            new Dictionary<string, object?>
+            {
+                ["@context"] =
+                    "https://schema.org",
+
+                ["@graph"] =
+                    new object[]
+                    {
+                    collectionPage,
+                    breadcrumbs
+                    }
+            };
+
+        ViewData["JsonLd"] =
+            JsonSerializer.Serialize(
+                jsonLd);
+    }
+
+
+
+
+}
+
+<section>
+    <header class="notebook-page-heading catalog-compact-heading">
+        <div class="catalog-heading-main">
+            <div class="notebook-page-kicker">
+                Лист 01 · Каталог
+            </div>
+
+            <h1>
+                @catalogHeading
+            </h1>
+
+            <p class="text-muted mb-0">
+                @catalogIntro
+            </p>
+        </div>
+
+        <div class="catalog-result-count">
+            Найдено: @Model.TotalCount
+        </div>
+    </header>
+
+
+    @if (Model.Prompts.Count == 0)
+    {
+        <div class="notebook-empty-state">
+            <h2>
+                На этом листе пока пусто
+            </h2>
+
+            <p class="text-muted">
+                Попробуйте изменить поисковый запрос
+                или выбрать другую категорию.
+            </p>
+
+            <a href="@Url.RouteUrl("PromptsCatalog")"
+               class="btn btn-outline-primary">
+                Показать все промпты
+            </a>
+        </div>
+    }
+    else
+    {
+        <svg class="catalog-icon-sprite"
+             aria-hidden="true"
+             focusable="false">
+            <symbol id="catalog-icon-eye"
+                    viewBox="0 0 24 24">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                <circle cx="12"
+                        cy="12"
+                        r="2.6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8" />
+            </symbol>
+
+            <symbol id="catalog-icon-copy"
+                    viewBox="0 0 24 24">
+                <rect x="8"
+                      y="8"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+            </symbol>
+
+            <symbol id="catalog-icon-comment"
+                    viewBox="0 0 24 24">
+                <path d="M5 5.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-8l-5 3v-3H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+            </symbol>
+        </svg>
+
+        <div class="prompt-notes-grid">
+            @foreach (var prompt in Model.Prompts)
+            {
+                var coverImageUrl =
+                    prompt.Cover is null
+                        ? null
+                        : Url.RouteUrl(
+                            "PromptMediaThumbnail",
+                            new
+                            {
+                                id = prompt.Cover.MediaId
+                            });
+
+                var coverAltText =
+                    prompt.Cover is null ||
+                    string.IsNullOrWhiteSpace(
+                        prompt.Cover.AltText)
+                        ? $"Обложка промпта «{prompt.Title}»"
+                        : prompt.Cover.AltText;
+
+                var visibleTags =
+                    prompt.Tags
+                        .Take(2)
+                        .ToList();
+
+                var hiddenTagCount =
+                    Math.Max(
+                        0,
+                        prompt.Tags.Count - visibleTags.Count);
+
+                <article class="prompt-note-card catalog-prompt-card">
+                    <div class="prompt-note-tape">
+                    </div>
+
+                    <a asp-controller="Prompts"
+                       asp-action="Details"
+                       asp-route-slug="@prompt.Slug"
+                       class="prompt-card-cover
+                        @(prompt.Cover is null
+                          ? "is-placeholder"
+                          : string.Empty)"
+                       aria-label="Открыть промпт «@prompt.Title»">
+
+                        @if (coverImageUrl is not null)
+                        {
+                            <img src="@coverImageUrl"
+                                 alt="@coverAltText"
+                                 class="prompt-card-cover-image"
+                                 loading="lazy"
+                                 decoding="async" />
+                        }
+                        else
+                        {
+                            <span class="prompt-card-cover-placeholder">
+                                <span class="prompt-card-cover-placeholder-mark"
+                                      aria-hidden="true">
+                                    PH
+                                </span>
+
+                                <span class="prompt-card-cover-placeholder-category">
+                                    @prompt.CategoryName
+                                </span>
+
+                                <span class="prompt-card-cover-placeholder-text">
+                                    Пример результата пока не добавлен
+                                </span>
+                            </span>
+                        }
+                    </a>
+
+                    <div class="prompt-card-badge-zone">
+                        <div class="prompt-note-tags">
+                            <a asp-route="PromptsCategory"
+                               asp-route-category="@prompt.CategorySlug"
+                               class="notebook-tag notebook-tag-purple text-decoration-none">
+                                @prompt.CategoryName
+                            </a>
+
+                            <a asp-controller="Prompts"
+                               asp-action="Index"
+                               asp-route-search="@Model.Search"
+                               asp-route-category="@Model.Category"
+                               asp-route-difficulty="@prompt.DifficultyValue"
+                               asp-route-tag="@Model.Tag"
+                               asp-route-sort="@Model.Sort"
+                               class="notebook-tag text-decoration-none">
+                                @prompt.DifficultyName
+                            </a>
+
+                            @if (prompt.HasConstructor)
+                            {
+                                <span class="notebook-tag notebook-tag-blue">
+                                    Есть настройка
+                                </span>
+                            }
+                        </div>
+
+                        @if (visibleTags.Count > 0)
+                        {
+                            <div class="prompt-note-extra-tags">
+                                @foreach (var tag in visibleTags)
+                                {
+                                    <a asp-route="PromptsTag"
+                                       asp-route-tag="@tag.Slug"
+                                       class="prompt-tag-badge text-decoration-none">
+                                        #@tag.Name
+                                    </a>
+                                }
+
+                                @if (hiddenTagCount > 0)
+                                {
+                                    <span class="prompt-tag-badge catalog-tag-more"
+                                          title="Ещё тегов: @hiddenTagCount">
+                                        +@hiddenTagCount
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <h2 class="prompt-note-title">
+                        <a asp-controller="Prompts"
+                           asp-action="Details"
+                           asp-route-slug="@prompt.Slug">
+                            @prompt.Title
+                        </a>
+                    </h2>
+
+                    <p class="prompt-note-summary">
+                        @prompt.Summary
+                    </p>
+
+                    <div class="catalog-card-info">
+                        <div class="catalog-card-rating"
+                             title="@(prompt.RatingCount > 0
+                                                                                        ? $"Средняя оценка {prompt.AverageRating:0.0} из 5, голосов: {prompt.RatingCount}"
+                                                                                        : "Оценок пока нет")">
+                            <span class="catalog-card-rating-star"
+                                  aria-hidden="true">
+                                @(prompt.RatingCount > 0 ? "★" : "☆")
+                            </span>
+
+                            @if (prompt.RatingCount > 0)
+                            {
+                                <span>
+                                    @prompt.AverageRating.ToString("0.0")
+                                </span>
+
+                                <span class="catalog-card-rating-count">
+                                    (@prompt.RatingCount)
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    Нет оценок
+                                </span>
+                            }
+
+                            @if (prompt.CurrentUserRating.HasValue)
+                            {
+                                <span class="prompt-note-user-rating">
+                                    Ваша: @prompt.CurrentUserRating
+                                </span>
+                            }
+                        </div>
+
+                        <div class="catalog-card-metrics"
+                             aria-label="Статистика промпта">
+                            <span class="catalog-card-metric"
+                                  title="Просмотры: @prompt.ViewCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-eye"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Просмотры:
+                                </span>
+                                <span>
+                                    @prompt.ViewCount
+                                </span>
+                            </span>
+
+                            <span class="catalog-card-metric"
+                                  title="Копирования: @prompt.CopyCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-copy"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Копирования:
+                                </span>
+                                <span>
+                                    @prompt.CopyCount
+                                </span>
+                            </span>
+
+                            <span class="catalog-card-metric"
+                                  title="Комментарии: @prompt.VisibleCommentCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-comment"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Комментарии:
+                                </span>
+                                <span>
+                                    @prompt.VisibleCommentCount
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <footer class="prompt-note-footer catalog-card-footer">
+                        <div class="prompt-note-actions">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <form action="@Url.Action(
+                                                                                                            "ToggleFavorite",
+                                                                                                            "Prompts",
+                                                                                                            new
+                                                                                                            {
+                                                                                                                slug = prompt.Slug
+                                                                                                            })"
+                                      method="post"
+                                      class="favorite-toggle-form">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-sm favorite-toggle-button
+                                        @(prompt.IsFavorite
+                                            ? "btn-primary is-favorite"
+                                            : "btn-outline-primary")"
+                                            aria-pressed="@prompt.IsFavorite.ToString().ToLowerInvariant()"
+                                            data-add-label="В избранное"
+                                            data-remove-label="В избранном">
+                                        @(prompt.IsFavorite
+                                            ? "В избранном"
+                                            : "В избранное")
+                                    </button>
+                                </form>
+                            }
+
+                            <a asp-controller="Prompts"
+                               asp-action="Details"
+                               asp-route-slug="@prompt.Slug"
+                               class="prompt-note-open">
+                                Открыть →
+                            </a>
+                        </div>
+                    </footer>
+                </article>
+            }
+        </div>
+
+        @* -------------------------------------------------------------------------
+   EN: Catalog pagination
+   RU: Пагинация каталога
+   ------------------------------------------------------------------------- *@
+
+
+
+
+
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="d-flex
+                justify-content-center
+                align-items-center
+                gap-3
+                mt-4"
+                 aria-label="Страницы каталога">
+
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-route="@paginationRouteName"
+                       asp-route-search="@Model.Search"
+                       asp-route-category="@Model.Category"
+                       asp-route-difficulty="@Model.Difficulty"
+                       asp-route-tag="@Model.Tag"
+                       asp-route-sort="@paginationSort"
+                       asp-route-page="@(Model.Page - 1 > 1
+                                                                            ? Model.Page - 1
+                                                                            : (int?)null)"
+                       class="btn btn-outline-secondary">
+                        ← Назад
+                    </a>
+                }
+
+                <span>
+                    Страница @Model.Page из @Model.TotalPages
+                </span>
+
+                @if (Model.HasNextPage)
+                {
+                    <a asp-route="@paginationRouteName"
+                       asp-route-search="@Model.Search"
+                       asp-route-category="@Model.Category"
+                       asp-route-difficulty="@Model.Difficulty"
+                       asp-route-tag="@Model.Tag"
+                       asp-route-sort="@paginationSort"
+                       asp-route-page="@(Model.Page + 1)"
+                       class="btn btn-outline-secondary">
+                        Далее →
+                    </a>
+                }
+            </nav>
+        }
+    }
+</section>

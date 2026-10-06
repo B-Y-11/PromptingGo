@@ -1,0 +1,106 @@
+﻿@model PromptHub.Web.Models.ViewModels.Prompts.AllTagsViewModel
+
+@{
+    ViewData["Title"] = "Все теги";
+    ViewData["MetaDescription"] =
+        "Все теги PromptingGo по алфавиту. Выберите тему и откройте подборку готовых промптов.";
+    ViewData["Robots"] = "index,follow";
+    ViewData["CanonicalUrl"] =
+        Url.RouteUrl(
+            "PromptsTags",
+            values: null,
+            protocol: Context.Request.Scheme,
+            host: Context.Request.Host.Value);
+}
+
+<div class="all-tags-page">
+    <header class="notebook-page-heading all-tags-heading">
+        <div class="catalog-heading-main">
+            <span class="notebook-page-kicker">
+                Навигация
+            </span>
+
+            <h1>Все теги</h1>
+
+            <p class="all-tags-intro">
+                Выберите тему, чтобы открыть все опубликованные промпты с этим тегом.
+                Теги расположены по алфавиту.
+            </p>
+        </div>
+
+        <div class="catalog-result-count">
+            @Model.TagCount тегов
+        </div>
+    </header>
+
+    @if (Model.Groups.Count == 0)
+    {
+        <section class="notebook-empty-state">
+            <h2>Тегов пока нет</h2>
+            <p class="text-muted mb-0">
+                Здесь появятся теги, когда в каталоге будут опубликованы связанные с ними промпты.
+            </p>
+        </section>
+    }
+    else
+    {
+        <nav class="all-tags-alphabet"
+             aria-label="Алфавитный указатель тегов">
+            @for (var groupIndex = 0;
+                  groupIndex < Model.Groups.Count;
+                  groupIndex++)
+            {
+                var group = Model.Groups[groupIndex];
+
+                <a href="#tag-group-@groupIndex"
+                   class="all-tags-letter-link">
+                    @group.Letter
+                </a>
+            }
+        </nav>
+
+        <div class="all-tags-groups">
+            @for (var groupIndex = 0;
+                  groupIndex < Model.Groups.Count;
+                  groupIndex++)
+            {
+                var group = Model.Groups[groupIndex];
+
+                <section id="tag-group-@groupIndex"
+                         class="all-tags-group">
+                    <div class="all-tags-group-header">
+                        <h2>@group.Letter</h2>
+
+                        <span>
+                            @group.Tags.Count
+                        </span>
+                    </div>
+
+                    <div class="all-tags-grid">
+                        @foreach (var tag in group.Tags)
+                        {
+                            <a asp-route="PromptsTag"
+                               asp-route-tag="@tag.Slug"
+                               class="all-tags-card">
+                                <span class="all-tags-card-name">
+                                    #@tag.Name
+                                </span>
+
+                                <span class="all-tags-card-count">
+                                    @tag.PromptCount
+                                </span>
+                            </a>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    }
+
+    <div class="all-tags-back-row">
+        <a asp-route="PromptsCatalog"
+           class="notebook-inline-link">
+            ← Вернуться в каталог
+        </a>
+    </div>
+</div>

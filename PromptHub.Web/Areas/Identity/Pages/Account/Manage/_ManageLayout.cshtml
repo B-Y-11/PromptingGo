@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PromptHub.Web.Models.Entities
+
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+
+    var currentUser =
+        await UserManager.GetUserAsync(User);
+
+    var accountEmail =
+        currentUser?.Email
+        ?? User.Identity?.Name
+        ?? string.Empty;
+
+    var accountName =
+        !string.IsNullOrWhiteSpace(
+            currentUser?.DisplayName)
+            ? currentUser.DisplayName
+            : accountEmail;
+
+    var accountInitial =
+        !string.IsNullOrWhiteSpace(accountName)
+            ? accountName.Trim()[0]
+                .ToString()
+                .ToUpperInvariant()
+            : "P";
+
+
+    var accountAvatarUrl =
+    currentUser is not null &&
+    !string.IsNullOrWhiteSpace(
+        currentUser.AvatarStorageKey) &&
+    currentUser.AvatarUpdatedAtUtc.HasValue
+        ? Url.RouteUrl(
+            "UserAvatarContent",
+            new
+            {
+                userId =
+                    currentUser.Id,
+
+                version =
+                    currentUser.AvatarUpdatedAtUtc
+                        .Value
+                        .Ticks
+            })
+        : null;
+}
+
+<section class="account-page">
+    <header class="account-header-sheet">
+        <div class="account-header-identity">
+            <div class="account-avatar">
+                <span>
+                    @accountInitial
+                </span>
+
+                @if (!string.IsNullOrWhiteSpace(accountAvatarUrl))
+                {
+                    <img src="@accountAvatarUrl"
+                         alt="@accountName" />
+                }
+            </div>
+
+            <div>
+                <div class="account-header-kicker">
+                    Личный кабинет
+                </div>
+
+                <h1 class="account-header-title">
+                    @accountName
+                </h1>
+
+                <div class="account-header-email">
+                    @accountEmail
+                </div>
+            </div>
+        </div>
+
+        <div class="account-header-actions">
+            <a asp-controller="Prompts"
+               asp-action="My"
+               asp-area=""
+               class="btn btn-outline-primary btn-sm">
+                Мои промпты
+            </a>
+
+            <a asp-controller="Prompts"
+               asp-action="Create"
+               asp-area=""
+               class="btn btn-primary btn-sm">
+                Добавить промпт
+            </a>
+        </div>
+    </header>
+
+    <div class="account-layout">
+        <aside class="account-sidebar">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <main class="account-content">
+            @RenderBody()
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
+}

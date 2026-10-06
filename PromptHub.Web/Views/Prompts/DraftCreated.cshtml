@@ -1,0 +1,175 @@
+﻿@model PromptHub.Web.Models.ViewModels.Prompts.PromptDraftCreatedViewModel
+
+@{
+    ViewData["Title"] = "Черновик создан";
+
+    var hasConstructor =
+        Model.Variables.Count > 0;
+}
+
+<section class="draft-created-page">
+    <main class="draft-created-sheet">
+        <div class="draft-created-status">
+            <span class="draft-created-status-mark">
+                ✓
+            </span>
+
+            Черновик сохранён
+        </div>
+
+        <h1 class="draft-created-title">
+            @Model.Title
+        </h1>
+
+        <p class="draft-created-description">
+            Промпт успешно добавлен в ваш личный блокнот.
+            Сейчас он доступен только вам и ещё не отображается
+            в общем каталоге.
+        </p>
+
+        <div class="draft-created-steps">
+            <article class="draft-created-step">
+                <div class="draft-created-step-number">
+                    ✓
+                </div>
+
+                <div class="draft-created-step-title">
+                    Черновик создан
+                </div>
+
+                <p class="draft-created-step-text">
+                    Текст и настройки сохранены
+                    в личном кабинете.
+                </p>
+            </article>
+
+            <article class="draft-created-step">
+                <div class="draft-created-step-number">
+                    2
+                </div>
+
+                <div class="draft-created-step-title">
+                    Проверьте страницу
+                </div>
+
+                <p class="draft-created-step-text">
+                    Откройте предпросмотр и убедитесь,
+                    что промпт работает правильно.
+                </p>
+            </article>
+
+            <article class="draft-created-step">
+                <div class="draft-created-step-number">
+                    3
+                </div>
+
+                <div class="draft-created-step-title">
+                    Отправьте на модерацию
+                </div>
+
+                <p class="draft-created-step-text">
+                    После проверки промпт можно отправить
+                    для публикации в каталоге.
+                </p>
+            </article>
+        </div>
+
+        @if (hasConstructor)
+        {
+            <section class="draft-created-constructor">
+                <header class="draft-created-constructor-header">
+                    <div>
+                        <h2 class="draft-created-constructor-title">
+                            Конструктор подключён
+                        </h2>
+
+                        <div class="text-muted small mt-1">
+                            Пользователь сможет настроить промпт
+                            с помощью следующих полей.
+                        </div>
+                    </div>
+
+                    <div class="draft-created-constructor-count">
+                        Полей: @Model.Variables.Count
+                    </div>
+                </header>
+
+                <div class="draft-created-fields">
+                    @foreach (var variable in Model.Variables)
+                    {
+                        <div class="draft-created-field">
+                            <span class="draft-created-field-name">
+                                @variable.Label
+                            </span>
+
+                            <span class="draft-created-field-state">
+                                @(variable.IsRequired
+                                    ? "Обязательное"
+                                    : "Необязательное")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+        else
+        {
+            <div class="draft-created-ready-note">
+                <strong>
+                    Готовый промпт без конструктора
+                </strong>
+
+                Посетители смогут сразу скопировать
+                полностью готовый текст без заполнения
+                дополнительных полей.
+            </div>
+        }
+
+        <div class="draft-created-actions">
+            @* -------------------------------------------------------------------------
+               EN: Prompt media management
+               RU: Управление медиа промпта
+               ------------------------------------------------------------------------- *@
+
+            <a asp-controller="PromptMedia"
+               asp-action="Manage"
+               asp-route-promptId="@Model.PromptId"
+               class="btn btn-primary">
+                Добавить примеры результата
+            </a>
+
+
+            <a asp-controller="Prompts"
+               asp-action="Preview"
+               asp-route-id="@Model.PromptId"
+               class="btn btn-outline-primary">
+                Открыть предпросмотр
+            </a>
+
+            <a asp-controller="Prompts"
+               asp-action="Edit"
+               asp-route-id="@Model.PromptId"
+               class="btn btn-outline-primary">
+                Редактировать
+            </a>
+
+            <a asp-controller="Prompts"
+               asp-action="My"
+               class="btn btn-outline-secondary">
+                Мои промпты
+            </a>
+
+            <a asp-controller="Prompts"
+               asp-action="Create"
+               class="btn btn-outline-secondary">
+                Создать ещё
+            </a>
+        </div>
+
+        <p class="draft-created-help">
+            Сначала откройте предпросмотр. После проверки
+            отправить промпт на модерацию можно на странице
+            предпросмотра или в разделе «Мои промпты».
+        </p>
+    </main>
+</section>

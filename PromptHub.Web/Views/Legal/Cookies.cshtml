@@ -1,0 +1,159 @@
+﻿@using PromptHub.Web.Services.Privacy
+@inject ICookieConsentService CookieConsentService
+
+@{
+    ViewData["Title"] =
+        "Использование cookie";
+
+    ViewData["Robots"] =
+        "noindex,follow";
+
+    var currentLevel =
+        CookieConsentService.GetLevel(
+            Context);
+
+    var returnUrl =
+        Context.Request.Path;
+}
+
+<div class="container py-5">
+    <article class="mx-auto"
+             style="max-width: 900px;">
+
+        <h1 class="mb-3">
+            Использование cookie
+        </h1>
+
+        <p class="text-muted">
+            Редакция от 12 августа 2026 года
+        </p>
+
+        <p>
+            PromptingGo использует небольшие файлы cookie
+            для работы сайта и, только с разрешения
+            пользователя, для статистики использования
+            промптов.
+        </p>
+
+        <h2 class="h4 mt-5">
+            Необходимые cookie
+        </h2>
+
+        <p>
+            Эти cookie используются для авторизации,
+            безопасности, защиты форм,
+            сохранения пользовательской сессии
+            и запоминания выбранных настроек cookie.
+        </p>
+
+        <p>
+            Без них отдельные функции PromptingGo
+            не смогут работать корректно.
+        </p>
+
+        <h2 class="h4 mt-5">
+            Статистические cookie
+        </h2>
+
+        <p>
+            Если пользователь разрешает статистику,
+            PromptingGo может использовать собственный
+            случайный идентификатор посетителя для
+            ограничения повторного учёта просмотров
+            и копирований промптов.
+        </p>
+
+        <p>
+            Для анонимного посетителя исходный случайный
+            идентификатор не сохраняется в базе данных:
+            в статистике используется его хэш.
+        </p>
+
+        <p>
+            Такой cookie хранится до 180 дней.
+        </p>
+
+        <p>
+            Если статистика не разрешена,
+            этот cookie не создаётся,
+            а соответствующие просмотры и копирования
+            не учитываются в статистике PromptingGo.
+        </p>
+
+        <h2 class="h4 mt-5">
+            Изменить выбор
+        </h2>
+
+        <p>
+            Текущий выбор:
+            <strong>
+                @(currentLevel switch
+                {
+                    CookieConsentLevel.Analytics =>
+                        "разрешена статистика",
+
+                    CookieConsentLevel.NecessaryOnly =>
+                        "только необходимые cookie",
+
+                    _ =>
+                        "выбор ещё не сделан"
+                })
+            </strong>
+        </p>
+
+        <div class="d-flex
+            flex-wrap
+            gap-2">
+
+            <form method="post"
+                  action="@Url.RouteUrl(
+                                      "LegalSetCookiePreference")">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="preference"
+                       value="necessary" />
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@returnUrl" />
+
+                <button type="submit"
+                        class="btn btn-outline-secondary">
+                    Только необходимые
+                </button>
+            </form>
+
+            <form method="post"
+                  action="@Url.RouteUrl(
+                                      "LegalSetCookiePreference")">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="preference"
+                       value="analytics" />
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@returnUrl" />
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Разрешить статистику
+                </button>
+            </form>
+
+        </div>
+
+        <p class="mt-5">
+            Подробнее об обработке данных см. в
+
+            <a href="@Url.RouteUrl("LegalPrivacy")">
+                Политике обработки персональных данных
+            </a>.
+        </p>
+
+    </article>
+</div>

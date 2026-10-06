@@ -1,0 +1,217 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.RegisterModel
+@using Microsoft.Extensions.Options
+@using PromptHub.Web.Services.Identity
+@inject IOptions<PhoneAuthenticationFeatureOptions> PhoneAuthenticationOptions
+
+@{
+    ViewData["Title"] = "Регистрация";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+            <div class="identity-kicker">
+                Новый автор
+            </div>
+
+            <h1 class="identity-title">
+                Создать аккаунт
+            </h1>
+
+            <p class="identity-description">
+                Сохраняйте промпты, создавайте конструкторы
+                и публикуйте свои материалы в каталоге.
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@Model.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.DisplayName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.DisplayName"
+                           class="form-control"
+                           autocomplete="nickname"
+                           placeholder="Например: PromptMaster" />
+
+                    <span asp-validation-for="Input.DisplayName"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Это имя будет видно другим пользователям PromptingGo.
+                        Можно использовать псевдоним — настоящее имя указывать не требуется.
+                        В публичном профиле также отображается дата регистрации.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           autocomplete="email"
+                           placeholder="name@example.com" />
+
+                    <span asp-validation-for="Input.Email"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Email используется для входа, подтверждения аккаунта
+                        и восстановления доступа. Другим пользователям он не показывается.
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Input.Password"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.Password"
+                               class="form-control"
+                               autocomplete="new-password"
+                               placeholder="Придумайте пароль" />
+
+                        <span asp-validation-for="Input.Password"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Input.ConfirmPassword"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="Input.ConfirmPassword"
+                               class="form-control"
+                               autocomplete="new-password"
+                               placeholder="Повторите пароль" />
+
+                        <span asp-validation-for="Input.ConfirmPassword"
+                              class="text-danger">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="identity-password-note">
+                    Пароль должен содержать не менее 6 символов, включая заглавную и строчную буквы, цифру и специальный символ.
+                </div>
+
+                <div class="mt-4">
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Input.AcceptTerms"
+                               class="form-check-input"
+                               required />
+
+                        <label class="form-check-label"
+                               for="@Html.IdFor(model => model.Input.AcceptTerms)">
+
+                            Я принимаю
+
+                            <a href="@Url.RouteUrl("LegalTerms")"
+                               target="_blank"
+                               rel="noopener">
+                                Пользовательское соглашение
+                            </a>
+
+                            и
+
+                            <a href="@Url.RouteUrl("LegalContentRules")"
+                               target="_blank"
+                               rel="noopener">
+                                Правила публикации
+                            </a>.
+                        </label>
+
+                        <span asp-validation-for="Input.AcceptTerms"
+                              class="text-danger d-block">
+                        </span>
+                    </div>
+
+                    <div class="form-check">
+                        <input asp-for="Input.AcceptPersonalData"
+                               class="form-check-input"
+                               required />
+
+                        <label class="form-check-label"
+                               for="@Html.IdFor(model => model.Input.AcceptPersonalData)">
+
+                            Я даю отдельное
+
+                            <a href="@Url.RouteUrl("LegalPersonalDataConsent")"
+                               target="_blank"
+                               rel="noopener">
+                                согласие на обработку персональных данных
+                            </a>
+
+                            и ознакомлен с
+
+                            <a href="@Url.RouteUrl("LegalPrivacy")"
+                               target="_blank"
+                               rel="noopener">
+                                Политикой обработки персональных данных
+                            </a>.
+                        </label>
+
+                        <span asp-validation-for="Input.AcceptPersonalData"
+                              class="text-danger d-block">
+                        </span>
+                    </div>
+
+                </div>
+
+                <partial name="/Views/Shared/_SmartCaptchaWidget.cshtml" />
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Создать аккаунт
+                </button>
+
+                @if (PhoneAuthenticationOptions.Value.Enabled)
+                {
+                    <div class="identity-footer-text">
+                        Или
+    
+                        <a asp-page="./Phone"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            продолжить по номеру телефона
+                        </a>
+                    </div>
+                }
+
+            </form>
+
+            <div class="identity-footer-text">
+                Уже зарегистрированы?
+
+                <a asp-page="./Login"
+                   asp-route-returnUrl="@Model.ReturnUrl">
+                    Войти
+                </a>
+            </div>
+        </main>
+
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

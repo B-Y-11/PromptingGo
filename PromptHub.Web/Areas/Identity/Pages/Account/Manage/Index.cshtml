@@ -1,0 +1,350 @@
+﻿@page
+@using PromptHub.Web.Extensions
+@model PromptHub.Web.Areas.Identity.Pages.Account.Manage.IndexModel
+
+@{
+    ViewData["Title"] = "Личный кабинет";
+    Layout = "_ManageLayout";
+
+    var previewName =
+        string.IsNullOrWhiteSpace(
+            Model.Input.DisplayName)
+            ? Model.Email
+            : Model.Input.DisplayName;
+
+    var previewInitial =
+        !string.IsNullOrWhiteSpace(
+            previewName)
+            ? previewName.Trim()[0]
+                .ToString()
+                .ToUpperInvariant()
+            : "P";
+}
+
+<section class="account-content-sheet">
+    <header class="account-section-header">
+        <div>
+            <div class="account-section-kicker">
+                Страница 01
+            </div>
+
+            <h2>
+                Профиль автора
+            </h2>
+
+            <p>
+                Имя на сайте, описание и изображение профиля
+                используются в публичных разделах PromptingGo.
+            </p>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(
+        Model.StatusMessage))
+    {
+        <div class="alert alert-success">
+            @Model.StatusMessage
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <div class="account-stats-grid">
+        <div class="account-stat-note">
+            <div class="account-stat-label">
+                Всего промптов
+            </div>
+
+            <div class="account-stat-value">
+                @Model.TotalPromptsCount
+            </div>
+        </div>
+
+        <div class="account-stat-note">
+            <div class="account-stat-label">
+                Черновики
+            </div>
+
+            <div class="account-stat-value">
+                @Model.DraftPromptsCount
+            </div>
+        </div>
+
+        <div class="account-stat-note">
+            <div class="account-stat-label">
+                На проверке
+            </div>
+
+            <div class="account-stat-value">
+                @Model.PendingPromptsCount
+            </div>
+        </div>
+
+        <div class="account-stat-note">
+            <div class="account-stat-label">
+                Опубликовано
+            </div>
+
+            <div class="account-stat-value">
+                @Model.PublishedPromptsCount
+            </div>
+        </div>
+    </div>
+
+    <div class="account-profile-grid">
+        <aside class="account-avatar-editor">
+            <div class="account-avatar-preview">
+                <span>
+                    @previewInitial
+                </span>
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.AvatarContentUrl))
+                {
+                    <img id="account-avatar-preview-image"
+                         src="@Model.AvatarContentUrl"
+                         alt="@previewName" />
+                }
+                else
+                {
+                    <img id="account-avatar-preview-image"
+                         class="d-none"
+                         alt="Предпросмотр выбранного аватара" />
+                }
+            </div>
+
+            <h3>
+                Изображение профиля
+            </h3>
+
+            <p>
+                JPG, PNG или WebP. Максимальный размер — 2 МБ.
+                После загрузки изображение будет уменьшено до 512 × 512.
+                Загруженное изображение будет видно в публичном профиле
+                и рядом с вашими материалами. Настоящую фотографию загружать не требуется.
+            </p>
+
+            <form method="post"
+                  enctype="multipart/form-data"
+                  asp-page-handler="UploadAvatar"
+                  class="account-avatar-form">
+
+                <label asp-for="AvatarFile"
+                       class="form-label">
+                </label>
+
+                <input asp-for="AvatarFile"
+                       id="account-avatar-file"
+                       class="form-control"
+                       type="file"
+                       accept="image/jpeg,image/png,image/webp" />
+
+                <span asp-validation-for="AvatarFile"
+                      class="text-danger">
+                </span>
+
+                <button type="submit"
+                        class="btn btn-primary btn-sm">
+                    @(Model.HasStoredAvatar
+                        ? "Заменить изображение"
+                        : "Загрузить изображение")
+                </button>
+            </form>
+
+            @if (Model.HasStoredAvatar)
+            {
+                <form method="post"
+                      asp-page-handler="DeleteAvatar"
+                      class="account-avatar-delete-form">
+
+                    <button type="submit"
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="return confirm('Удалить изображение профиля?');">
+                        Удалить изображение
+                    </button>
+                </form>
+            }
+        </aside>
+
+        <div class="account-profile-fields">
+            <form method="post">
+                <div class="mb-4">
+                    <label asp-for="Input.DisplayName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.DisplayName"
+                           class="form-control"
+                           autocomplete="nickname"
+                           placeholder="Например: PromptMaster" />
+
+                    <span asp-validation-for="Input.DisplayName"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Это имя видно другим пользователям в каталоге, профиле и рядом с вашими материалами.
+                        Можно использовать псевдоним — настоящее имя указывать не требуется.
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Input.Bio"
+                           class="form-label">
+                    </label>
+
+                    <textarea asp-for="Input.Bio"
+                              class="form-control"
+                              rows="6"
+                              maxlength="500"
+                              placeholder="Коротко расскажите о себе и своих промптах."></textarea>
+
+                    <span asp-validation-for="Input.Bio"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Максимум 500 символов. Если заполните поле,
+                        описание будет видно в публичном профиле.
+                    </div>
+                </div>
+
+                <div class="account-readonly-grid">
+                    <div>
+                        <label class="form-label">
+                            Email
+                        </label>
+
+                        <input value="@(string.IsNullOrWhiteSpace(Model.Email)
+                                               ? "Не указан"
+                                               : Model.Email)"
+                               class="form-control"
+                               type="text"
+                               disabled />
+
+                        @if (string.IsNullOrWhiteSpace(
+                            Model.Email))
+                        {
+                            <div class="form-text">
+                                Email не добавлен.
+                                Добавить его можно в разделе «Способы входа».
+                            </div>
+                        }
+                        else if (!Model.EmailConfirmed)
+                        {
+                            <div class="form-text">
+                                Email не подтверждён.
+                                Подтвердить его можно в разделе «Способы входа».
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-text">
+                                Подтверждённый email используется для входа
+                                и восстановления доступа.
+                            </div>
+                        }
+
+                        <div class="form-text">
+                            Email не отображается в публичном профиле
+                            и не показывается другим пользователям.
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">
+                            Дата регистрации
+                        </label>
+
+                        <div class="account-readonly-value">
+                            <time datetime="@Model.CreatedAtUtc.ToUtcIsoString()"
+                                  data-local-date>
+                                @Model.CreatedAtUtc.ToString("dd.MM.yyyy")
+                            </time>
+                        </div>
+
+                        <div class="form-text">
+                            Дата регистрации отображается в публичном профиле.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="account-form-actions">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Сохранить профиль
+                    </button>
+
+                    <a asp-controller="Prompts"
+                       asp-action="My"
+                       asp-area=""
+                       class="btn btn-outline-secondary">
+                        Перейти к промптам
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+
+    <script>
+        (() => {
+            const fileInput =
+                document.getElementById(
+                    "account-avatar-file");
+
+            const previewImage =
+                document.getElementById(
+                    "account-avatar-preview-image");
+
+            if (!fileInput ||
+                !previewImage) {
+                return;
+            }
+
+            let previewObjectUrl =
+                null;
+
+            fileInput.addEventListener(
+                "change",
+                () => {
+                    const file =
+                        fileInput.files?.[0];
+
+                    if (!file) {
+                        return;
+                    }
+
+                    if (previewObjectUrl) {
+                        URL.revokeObjectURL(
+                            previewObjectUrl);
+                    }
+
+                    previewObjectUrl =
+                        URL.createObjectURL(
+                            file);
+
+                    previewImage.src =
+                        previewObjectUrl;
+
+                    previewImage.classList.remove(
+                        "d-none");
+                });
+
+            window.addEventListener(
+                "beforeunload",
+                () => {
+                    if (previewObjectUrl) {
+                        URL.revokeObjectURL(
+                            previewObjectUrl);
+                    }
+                });
+        })();
+    </script>
+}

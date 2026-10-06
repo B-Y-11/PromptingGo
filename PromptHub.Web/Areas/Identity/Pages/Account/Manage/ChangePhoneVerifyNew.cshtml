@@ -1,0 +1,73 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.Manage.ChangePhoneVerifyNewModel
+
+@{
+    ViewData["Title"] = "Подтверждение нового номера";
+    Layout = "_ManageLayout";
+}
+
+<section class="account-content-sheet">
+    <header class="account-section-header">
+        <div>
+            <div class="account-section-kicker">
+                Безопасность
+            </div>
+
+            <h2>
+                Подтвердите новый номер
+            </h2>
+
+            <p>
+                Введите код, отправленный на
+                @Model.MaskedNewPhoneNumber.
+            </p>
+        </div>
+    </header>
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <form method="post"
+          class="account-profile-fields">
+
+        <input asp-for="ChallengeId"
+               type="hidden" />
+
+        <input asp-for="Continuation"
+               type="hidden" />
+
+        <div class="mb-4">
+            <label asp-for="Input.Code"
+                   class="form-label">
+            </label>
+
+            <input asp-for="Input.Code"
+                   class="form-control"
+                   inputmode="numeric"
+                   autocomplete="one-time-code"
+                   maxlength="6"
+                   placeholder="123456" />
+
+            <span asp-validation-for="Input.Code"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Подтвердить и изменить номер
+        </button>
+
+        <a asp-page="./ChangePhoneNew"
+           asp-route-continuation="@Model.Continuation"
+           class="btn btn-outline-secondary">
+            Указать другой номер
+        </a>
+    </form>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

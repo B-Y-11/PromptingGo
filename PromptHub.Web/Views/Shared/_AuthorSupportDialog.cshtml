@@ -1,0 +1,191 @@
+﻿@model PromptHub.Web.Models.ViewModels.AuthorSupport.AuthorSupportViewModel
+
+@if (Model.IsAvailable)
+{
+    <dialog class="author-support-dialog"
+            data-author-support-dialog>
+
+        <div class="author-support-dialog-sheet">
+            <button type="button"
+                    class="author-support-dialog-close"
+                    aria-label="Закрыть"
+                    data-author-support-close>
+                ×
+            </button>
+
+            <div class="author-support-dialog-kicker">
+                Спасибо автору
+            </div>
+
+            <h2 class="author-support-dialog-title">
+                Поддержать @Model.AuthorName
+            </h2>
+
+            <p class="author-support-dialog-description">
+                Если промпт оказался полезным,
+                можно добровольно поблагодарить автора.
+            </p>
+
+            <div class="author-support-amount-section">
+                <div class="author-support-dialog-label">
+                    Сумма
+                </div>
+
+                <div class="author-support-amounts">
+                    <button type="button"
+                            class="author-support-amount-button"
+                            data-support-amount="50">
+                        50 ₽
+                    </button>
+
+                    <button type="button"
+                            class="author-support-amount-button is-selected"
+                            data-support-amount="100">
+                        100 ₽
+                    </button>
+
+                    <button type="button"
+                            class="author-support-amount-button"
+                            data-support-amount="200">
+                        200 ₽
+                    </button>
+                </div>
+
+                <label class="author-support-custom-amount">
+                    <span>
+                        Другая сумма
+                    </span>
+
+                    <span class="author-support-custom-input">
+                        <input type="number"
+                               min="50"
+                               step="1"
+                               inputmode="numeric"
+                               placeholder="Например, 300"
+                               data-support-custom-amount />
+
+                        <span>
+                            ₽
+                        </span>
+                    </span>
+                </label>
+
+                <div class="author-support-amount-error"
+                     data-support-amount-error
+                     hidden>
+                    Укажите сумму не меньше 50 ₽.
+                </div>
+            </div>
+
+            <div class="author-support-provider-section">
+                <div class="author-support-dialog-label">
+                    Как удобнее перевести?
+                </div>
+
+                <div class="author-support-providers">
+
+                    @if (Model.HasCloudTips)
+                    {
+                        <a href="@Model.CloudTipsUrl"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           referrerpolicy="no-referrer"
+                           class="author-support-provider-button"
+                           data-support-cloudtips
+                           data-base-url="@Model.CloudTipsUrl">
+
+                            <span class="author-support-provider-icon">
+                                CT
+                            </span>
+
+                            <span>
+                                <strong>
+                                    CloudTips
+                                </strong>
+
+                                <small>
+                                    Перейти к переводу
+                                </small>
+                            </span>
+                        </a>
+                    }
+
+                    @if (Model.HasYooMoney)
+                    {
+                        <div class="author-support-yoomoney">
+                            <div class="author-support-provider-heading">
+                                <span class="author-support-provider-icon">
+                                    Ю
+                                </span>
+
+                                <span>
+                                    <strong>
+                                        ЮMoney
+                                    </strong>
+
+                                    <small>
+                                        Выберите способ оплаты
+                                    </small>
+                                </span>
+                            </div>
+
+                            <form method="post"
+                                  action="https://yoomoney.ru/quickpay/confirm"
+                                  target="_blank"
+                                  class="author-support-yoomoney-form"
+                                  data-support-yoomoney-form>
+
+                                <input type="hidden"
+                                       name="receiver"
+                                       value="@Model.YooMoneyWallet" />
+
+                                <input type="hidden"
+                                       name="quickpay-form"
+                                       value="button" />
+
+                                <input type="hidden"
+                                       name="sum"
+                                       value="100"
+                                       data-support-yoomoney-sum />
+
+                                <div class="author-support-yoomoney-actions">
+                                    <button type="submit"
+                                            name="paymentType"
+                                            value="AC"
+                                            class="author-support-payment-button">
+                                        Банковской картой
+                                    </button>
+
+                                    <button type="submit"
+                                            name="paymentType"
+                                            value="PC"
+                                            class="author-support-payment-button">
+                                        Кошельком ЮMoney
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <div class="author-support-dialog-note">
+                <span>
+                    Важно
+                </span>
+
+                <p>
+                    Поддержка полностью добровольная.
+                    PromptingGo не получает эти деньги
+                    и не хранит данные вашей банковской карты.
+                    Перевод выполняется на стороне
+                    выбранного платёжного сервиса.
+                </p>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="~/js/author-support.js"
+            asp-append-version="true"></script>
+}

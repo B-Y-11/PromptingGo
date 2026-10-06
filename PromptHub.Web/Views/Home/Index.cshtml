@@ -1,0 +1,532 @@
+﻿@model PromptHub.Web.Models.ViewModels.Home.HomeIndexViewModel
+
+@{
+    ViewData["Title"] =
+    "Готовые промпты для ChatGPT и других нейросетей";
+
+    ViewData["MetaDescription"] =
+        "Каталог готовых промптов для ChatGPT и других нейросетей. Найдите промпт под свою задачу, скопируйте готовый вариант или настройте его в конструкторе.";
+
+    ViewData["Robots"] =
+        "index,follow";
+
+    ViewData["CanonicalUrl"] =
+        Url.Action(
+            "Index",
+            "Home",
+            values: null,
+            protocol:
+                Context.Request.Scheme,
+            host:
+                Context.Request.Host.Value);
+
+    ViewData["OgType"] =
+        "website";
+
+    var homeUrl =
+Url.Action(
+    "Index",
+    "Home",
+    values: null,
+    protocol:
+        Context.Request.Scheme,
+    host:
+        Context.Request.Host.Value);
+
+    if (!string.IsNullOrWhiteSpace(
+            homeUrl))
+    {
+        var websiteJsonLd =
+            new Dictionary<string, object?>
+            {
+                ["@context"] =
+                    "https://schema.org",
+
+                ["@type"] =
+                    "WebSite",
+
+                ["@id"] =
+                    $"{homeUrl}#website",
+
+                ["url"] =
+                    homeUrl,
+
+                ["name"] =
+                    "PromptingGo",
+
+                ["inLanguage"] =
+                    "ru"
+            };
+
+        ViewData["JsonLd"] =
+            JsonSerializer.Serialize(
+                websiteJsonLd);
+    }
+}
+
+<section class="hero-section">
+    <div class="hero-layout">
+        <div>
+            <div class="hero-eyebrow">
+                Каталог промптов с настройкой
+            </div>
+
+            <h1 class="hero-title">
+                Хороший результат начинается с правильного промпта
+            </h1>
+
+            <p class="hero-description">
+                Найдите промпт под свою задачу,
+                используйте готовый вариант сразу
+                или настройте его с помощью конструктора.
+            </p>
+
+            <div class="hero-actions">
+                <a asp-controller="Prompts"
+                   asp-action="Index"
+                   class="btn btn-primary btn-lg">
+                    Открыть каталог
+                </a>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Prompts"
+                       asp-action="Create"
+                       class="btn btn-outline-primary btn-lg">
+                        Добавить промпт
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Identity"
+                       asp-page="/Account/Register"
+                       class="btn btn-outline-primary btn-lg">
+                        Стать автором
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div class="hero-preview">
+            <div class="hero-preview-window">
+                <div class="hero-preview-header">
+                    <span class="hero-preview-label">
+                        Настраиваемый промпт
+                    </span>
+
+                    <span class="badge text-bg-success">
+                        Готово
+                    </span>
+                </div>
+
+                <div class="hero-preview-body">
+                    <p>
+                        Выступи в роли опытного редактора.
+                    </p>
+
+                    <p>
+                        Напиши статью на тему
+                        <span class="hero-preview-variable">
+                            Тема статьи
+                        </span>.
+                    </p>
+
+                    <p>
+                        Используй
+                        <span class="hero-preview-variable">
+                            научный стиль
+                        </span>
+                        и адаптируй текст для
+                        <span class="hero-preview-variable">
+                            студентов
+                        </span>.
+                    </p>
+
+                    <div class="d-flex
+                        justify-content-between
+                        align-items-center
+                        gap-3
+                        mt-4">
+
+                        <span class="small text-muted">
+                            Все поля заполнены
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-primary btn-sm"
+                                disabled>
+                            Скопировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-features">
+    <div class="home-feature">
+        <h2 class="home-feature-title">
+            Можно использовать сразу
+        </h2>
+
+        <p class="home-feature-text">
+            У каждого материала есть полностью готовый вариант,
+            который не требует дополнительной настройки.
+        </p>
+    </div>
+
+    <div class="home-feature">
+        <h2 class="home-feature-title">
+            Понятная настройка
+        </h2>
+
+        <p class="home-feature-text">
+            Заполняйте обычные поля вместо редактирования
+            технических переменных внутри текста.
+        </p>
+    </div>
+
+    <div class="home-feature">
+        <h2 class="home-feature-title">
+            Проверенные публикации
+        </h2>
+
+        <p class="home-feature-text">
+            Промпты проходят модерацию перед тем,
+            как появляются в общем каталоге.
+        </p>
+    </div>
+</section>
+<section class="home-top-prompts">
+    <header class="home-section-header">
+        <div>
+            <div class="notebook-page-kicker">
+                Лучшие записи
+            </div>
+
+            <h2>
+                Промпты с высокой оценкой
+            </h2>
+
+            <p>
+                Эти материалы чаще получают хорошие оценки
+                и могут быть полезны для старта.
+            </p>
+        </div>
+
+        <a asp-controller="Prompts"
+           asp-action="Index"
+           asp-route-sort="rating"
+           class="btn btn-outline-primary">
+            Смотреть все
+        </a>
+    </header>
+
+    @if (Model.TopPrompts.Count == 0)
+    {
+        <div class="home-empty-note">
+            <h3>
+                Лучшие промпты скоро появятся
+            </h3>
+
+            <p>
+                Когда пользователи начнут ставить оценки,
+                здесь появятся самые полезные материалы.
+            </p>
+        </div>
+    }
+    else
+    {
+        <svg class="catalog-icon-sprite"
+             aria-hidden="true"
+             focusable="false">
+            <symbol id="catalog-icon-eye"
+                    viewBox="0 0 24 24">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                <circle cx="12"
+                        cy="12"
+                        r="2.6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8" />
+            </symbol>
+
+            <symbol id="catalog-icon-copy"
+                    viewBox="0 0 24 24">
+                <rect x="8"
+                      y="8"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+            </symbol>
+
+            <symbol id="catalog-icon-comment"
+                    viewBox="0 0 24 24">
+                <path d="M5 5.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-8l-5 3v-3H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+            </symbol>
+        </svg>
+
+        <div class="home-top-prompts-grid">
+            @foreach (var prompt in Model.TopPrompts)
+            {
+                var coverImageUrl =
+                    prompt.Cover is null
+                        ? null
+                        : Url.RouteUrl(
+                            "PromptMediaThumbnail",
+                            new
+                            {
+                                id = prompt.Cover.MediaId
+                            });
+
+                var coverAltText =
+                    prompt.Cover is null ||
+                    string.IsNullOrWhiteSpace(
+                        prompt.Cover.AltText)
+                        ? $"Обложка промпта «{prompt.Title}»"
+                        : prompt.Cover.AltText;
+
+                var visibleTags =
+                    prompt.Tags
+                        .Take(2)
+                        .ToList();
+
+                var hiddenTagCount =
+                    Math.Max(
+                        0,
+                        prompt.Tags.Count - visibleTags.Count);
+
+                <article class="prompt-note-card catalog-prompt-card home-top-prompt-card">
+                    <div class="prompt-note-tape">
+                    </div>
+
+                    <a asp-controller="Prompts"
+                       asp-action="Details"
+                       asp-route-slug="@prompt.Slug"
+                       class="prompt-card-cover
+                        @(prompt.Cover is null
+                           ? "is-placeholder"
+                           : string.Empty)"
+                       aria-label="Открыть промпт «@prompt.Title»">
+
+                        @if (coverImageUrl is not null)
+                        {
+                            <img src="@coverImageUrl"
+                                 alt="@coverAltText"
+                                 class="prompt-card-cover-image"
+                                 loading="lazy"
+                                 decoding="async" />
+                        }
+                        else
+                        {
+                            <span class="prompt-card-cover-placeholder">
+                                <span class="prompt-card-cover-placeholder-mark"
+                                      aria-hidden="true">
+                                    PH
+                                </span>
+
+                                <span class="prompt-card-cover-placeholder-category">
+                                    @prompt.CategoryName
+                                </span>
+
+                                <span class="prompt-card-cover-placeholder-text">
+                                    Пример результата пока не добавлен
+                                </span>
+                            </span>
+                        }
+                    </a>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form action="@Url.Action(
+                                                        "ToggleFavorite",
+                                                        "Prompts",
+                                                        new
+                                                        {
+                                                            slug = prompt.Slug
+                                                        })"
+                              method="post"
+                              class="favorite-toggle-form">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-sm favorite-toggle-button
+                                @(prompt.IsFavorite
+                                    ? "btn-primary is-favorite"
+                                    : "btn-outline-primary")"
+                                    aria-pressed="@prompt.IsFavorite.ToString().ToLowerInvariant()"
+                                    data-add-label="В избранное"
+                                    data-remove-label="В избранном">
+                                @(prompt.IsFavorite
+                                    ? "В избранном"
+                                    : "В избранное")
+                            </button>
+                        </form>
+                    }
+
+                    <div class="prompt-card-badge-zone">
+                        <div class="prompt-note-tags">
+                            <span class="notebook-tag notebook-tag-purple">
+                                @prompt.CategoryName
+                            </span>
+
+                            @if (prompt.HasConstructor)
+                            {
+                                <span class="notebook-tag notebook-tag-blue">
+                                    Есть настройка
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="notebook-tag">
+                                    Готовый промпт
+                                </span>
+                            }
+                        </div>
+
+                        @if (visibleTags.Count > 0)
+                        {
+                            <div class="prompt-note-extra-tags">
+                                @foreach (var tag in visibleTags)
+                                {
+                                    <span class="prompt-tag-badge">
+                                        #@tag.Name
+                                    </span>
+                                }
+
+                                @if (hiddenTagCount > 0)
+                                {
+                                    <span class="prompt-tag-badge catalog-tag-more"
+                                          title="Ещё тегов: @hiddenTagCount">
+                                        +@hiddenTagCount
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <h3 class="prompt-note-title">
+                        <a asp-controller="Prompts"
+                           asp-action="Details"
+                           asp-route-slug="@prompt.Slug">
+                            @prompt.Title
+                        </a>
+                    </h3>
+
+                    <p class="prompt-note-summary">
+                        @prompt.Summary
+                    </p>
+
+                    <div class="catalog-card-info">
+                        <div class="catalog-card-rating"
+                             title="@(prompt.RatingCount > 0
+                                                            ? $"Средняя оценка {prompt.AverageRating:0.0} из 5, голосов: {prompt.RatingCount}"
+                                                            : "Оценок пока нет")">
+                            <span class="catalog-card-rating-star"
+                                  aria-hidden="true">
+                                @(prompt.RatingCount > 0 ? "★" : "☆")
+                            </span>
+
+                            @if (prompt.RatingCount > 0)
+                            {
+                                <span>
+                                    @prompt.AverageRating.ToString("0.0")
+                                </span>
+
+                                <span class="catalog-card-rating-count">
+                                    (@prompt.RatingCount)
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    Нет оценок
+                                </span>
+                            }
+                        </div>
+
+                        <div class="catalog-card-metrics"
+                             aria-label="Статистика промпта">
+                            <span class="catalog-card-metric"
+                                  title="Просмотры: @prompt.ViewCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-eye"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Просмотры:
+                                </span>
+                                <span>
+                                    @prompt.ViewCount
+                                </span>
+                            </span>
+
+                            <span class="catalog-card-metric"
+                                  title="Копирования: @prompt.CopyCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-copy"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Копирования:
+                                </span>
+                                <span>
+                                    @prompt.CopyCount
+                                </span>
+                            </span>
+
+                            <span class="catalog-card-metric"
+                                  title="Комментарии: @prompt.VisibleCommentCount">
+                                <svg class="catalog-card-metric-icon"
+                                     aria-hidden="true"
+                                     focusable="false">
+                                    <use href="#catalog-icon-comment"></use>
+                                </svg>
+                                <span class="visually-hidden">
+                                    Комментарии:
+                                </span>
+                                <span>
+                                    @prompt.VisibleCommentCount
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <footer class="prompt-note-footer catalog-card-footer">
+                        <div class="prompt-note-actions">
+                            <a asp-controller="Prompts"
+                               asp-action="Details"
+                               asp-route-slug="@prompt.Slug"
+                               class="prompt-note-open">
+                                Открыть →
+                            </a>
+                        </div>
+                    </footer>
+                </article>
+            }
+        </div>
+    }
+</section>

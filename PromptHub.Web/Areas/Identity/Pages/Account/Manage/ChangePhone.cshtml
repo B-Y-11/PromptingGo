@@ -1,0 +1,124 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.Manage.ChangePhoneModel
+
+@{
+    ViewData["Title"] = "Смена телефона";
+    Layout = "_ManageLayout";
+}
+
+<section class="account-content-sheet">
+    <header class="account-section-header">
+        <div>
+            <div class="account-section-kicker">
+                Безопасность
+            </div>
+
+            <h2>
+                Сменить номер телефона
+            </h2>
+
+            <p>
+                Сначала подтвердите, что аккаунт принадлежит вам.
+            </p>
+        </div>
+    </header>
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <div class="account-profile-fields">
+
+        <div class="mb-4">
+            <label class="form-label">
+                Текущий номер
+            </label>
+
+            <input class="form-control"
+                   value="@Model.MaskedPhoneNumber"
+                   disabled />
+        </div>
+
+        <div class="mb-4">
+            <h3>
+                Есть доступ к текущему номеру
+            </h3>
+
+            <p class="form-text">
+                Отправим одноразовый код на текущий номер телефона.
+            </p>
+
+            <form method="post"
+                  asp-page-handler="Sms">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Отправить код по SMS
+                </button>
+            </form>
+        </div>
+
+        <hr />
+
+        <div class="mt-4">
+            <h3>
+                Нет доступа к текущему номеру?
+            </h3>
+
+            @if (Model.CanUseEmailRecovery)
+            {
+                <p class="form-text">
+                    Подтвердите текущий пароль.
+                    После этого код будет отправлен на
+                    @Model.MaskedEmail.
+                </p>
+
+                <form method="post"
+                      asp-page-handler="Email">
+
+                    <div class="mb-3">
+                        <label asp-for="EmailRecoveryPassword"
+                               class="form-label">
+                            Текущий пароль
+                        </label>
+
+                        <input asp-for="EmailRecoveryPassword"
+                               class="form-control"
+                               type="password"
+                               autocomplete="current-password" />
+
+                        <span asp-validation-for="EmailRecoveryPassword"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-outline-primary">
+                        Отправить код на email
+                    </button>
+                </form>
+            }
+            else
+            {
+                <p class="form-text">
+                    Восстановление через email недоступно.
+                    Для него должны быть заранее добавлены
+                    подтверждённый email и пароль.
+                </p>
+            }
+        </div>
+
+        <div class="mt-4">
+            <a asp-page="./SignInMethods"
+               class="btn btn-outline-secondary">
+                Отмена
+            </a>
+        </div>
+
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

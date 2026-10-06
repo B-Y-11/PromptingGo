@@ -1,0 +1,256 @@
+﻿@model PromptHub.Web.Models.ViewModels.Moderation.CommentReportsViewModel
+
+@{
+    ViewData["Title"] = "Жалобы на комментарии";
+}
+
+<section class="notebook-page-shell moderation-comment-reports-page">
+    <header class="notebook-page-heading">
+        <div>
+            <div class="notebook-page-kicker">
+                Модерация · Комментарии
+            </div>
+
+            <h1>
+                Жалобы на комментарии
+            </h1>
+
+            <p class="text-muted mb-0">
+                Проверьте жалобы пользователей и примите решение:
+                скрыть комментарий или отклонить жалобу.
+            </p>
+        </div>
+
+        <div class="catalog-result-count">
+            Открыто: @Model.OpenCount
+        </div>
+    </header>
+
+    <nav class="comment-report-filter-tabs"
+         aria-label="Фильтр жалоб на комментарии">
+
+        <a asp-controller="CommentReportsModeration"
+           asp-action="Index"
+           asp-route-status="open"
+           class="comment-report-filter-tab @(Model.SelectedStatus == "open" ? "active" : string.Empty)">
+            Открытые
+            <span>@Model.OpenCount</span>
+        </a>
+
+        <a asp-controller="CommentReportsModeration"
+           asp-action="Index"
+           asp-route-status="resolved"
+           class="comment-report-filter-tab @(Model.SelectedStatus == "resolved" ? "active" : string.Empty)">
+            Решённые
+            <span>@Model.ResolvedCount</span>
+        </a>
+
+        <a asp-controller="CommentReportsModeration"
+           asp-action="Index"
+           asp-route-status="dismissed"
+           class="comment-report-filter-tab @(Model.SelectedStatus == "dismissed" ? "active" : string.Empty)">
+            Отклонённые
+            <span>@Model.DismissedCount</span>
+        </a>
+
+        <a asp-controller="CommentReportsModeration"
+           asp-action="Index"
+           asp-route-status="all"
+           class="comment-report-filter-tab @(Model.SelectedStatus == "all" ? "active" : string.Empty)">
+            Все
+            <span>@Model.TotalCount</span>
+        </a>
+    </nav>
+
+    @if (Model.Reports.Count == 0)
+    {
+        <div class="notebook-empty-state">
+            Жалоб в выбранном разделе нет.
+        </div>
+    }
+    else
+    {
+        <div class="comment-report-list">
+            @foreach (var report in Model.Reports)
+            {
+                <article class="comment-report-card">
+                    <header class="comment-report-header">
+                        <div>
+                            <div class="comment-report-kicker">
+                                Жалоба #@report.ReportId · @report.ReasonName
+                            </div>
+
+                            <div class="comment-report-status-pill @(report.IsOpen ? "comment-report-status-open" : "comment-report-status-closed")">
+                                @report.StatusName
+                            </div>
+
+                            <h2>
+                                <a asp-controller="Prompts"
+                                   asp-action="Details"
+                                   asp-route-slug="@report.PromptSlug">
+                                    @report.PromptTitle
+                                </a>
+                            </h2>
+                        </div>
+
+                        <time datetime="@report.CreatedAtUtc.ToString("O")"
+                              class="comment-report-date">
+                            @report.CreatedAtUtc.ToString("dd.MM.yyyy HH:mm") UTC
+                        </time>
+                    </header>
+
+                    <div class="comment-report-meta">
+                        <div>
+                            Автор комментария:
+                            <a asp-controller="Authors"
+                               asp-action="Details"
+                               asp-route-id="@report.CommentAuthorId">
+                                @report.CommentAuthorName
+                            </a>
+                        </div>
+
+                        <div>
+                            Жалобу отправил:
+                            <a asp-controller="Authors"
+                               asp-action="Details"
+                               asp-route-id="@report.ReporterId">
+                                @report.ReporterName
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="comment-report-body-block">
+                        <div class="comment-report-label">
+                            Текст комментария
+                        </div>
+
+                        <div class="comment-report-comment-body">
+                            @report.CommentBody
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(report.Details))
+                    {
+                        <div class="comment-report-body-block">
+                            <div class="comment-report-label">
+                                Подробности жалобы
+                            </div>
+
+                            <div class="comment-report-details">
+                                @report.Details
+                            </div>
+                        </div>
+                    }
+
+                    @if (report.IsCommentAlreadyHidden)
+                    {
+                        <div class="comment-report-already-hidden">
+                            Комментарий уже скрыт.
+
+                            @if (!string.IsNullOrWhiteSpace(report.CommentModerationReason))
+                            {
+                                <span>
+                                    Причина: @report.CommentModerationReason
+                                </span>
+                            }
+                        </div>
+                    }
+
+                    @if (!report.IsOpen)
+                    {
+                        <div class="comment-report-resolution-block">
+                            <div class="comment-report-label">
+                                Решение модерации
+                            </div>
+
+                            <div class="comment-report-resolution-text">
+                                @if (!string.IsNullOrWhiteSpace(report.ResolutionComment))
+                                {
+                                    @report.ResolutionComment
+                                }
+                                else
+                                {
+                                    <span>
+                                        Комментарий к решению не указан.
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="comment-report-resolution-meta">
+                                @if (report.ResolvedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        @report.ResolvedAtUtc.Value.ToString("dd.MM.yyyy HH:mm") UTC
+                                    </span>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(report.ResolvedByName))
+                                {
+                                    <span>
+                                        Модератор: @report.ResolvedByName
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (report.IsOpen)
+                    {
+                        <footer class="comment-report-actions">
+                            <form asp-controller="CommentReportsModeration"
+                                  asp-action="HideReportedComment"
+                                  asp-route-reportId="@report.ReportId"
+                                  method="post"
+                                  class="comment-report-resolution-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <label for="hideReason-@report.ReportId">
+                                    Причина скрытия / комментарий модератора
+                                </label>
+
+                                <textarea id="hideReason-@report.ReportId"
+                                          name="resolutionComment"
+                                          class="form-control"
+                                          rows="2"
+                                          maxlength="500"
+                                          placeholder="Можно оставить пустым: будет использована причина жалобы."></textarea>
+
+                                <button type="submit"
+                                        class="btn btn-warning"
+                                        onclick="return confirm('Скрыть комментарий и закрыть жалобы по нему?');">
+                                    Скрыть комментарий
+                                </button>
+                            </form>
+
+                            <form asp-controller="CommentReportsModeration"
+                                  asp-action="DismissCommentReport"
+                                  asp-route-reportId="@report.ReportId"
+                                  method="post"
+                                  class="comment-report-resolution-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <label for="dismissReason-@report.ReportId">
+                                    Причина отклонения жалобы
+                                </label>
+
+                                <textarea id="dismissReason-@report.ReportId"
+                                          name="resolutionComment"
+                                          class="form-control"
+                                          rows="2"
+                                          maxlength="1000"
+                                          placeholder="Например: нарушение не подтверждено."></textarea>
+
+                                <button type="submit"
+                                        class="btn btn-outline-secondary"
+                                        onclick="return confirm('Отклонить жалобу?');">
+                                    Отклонить жалобу
+                                </button>
+                            </form>
+                        </footer>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

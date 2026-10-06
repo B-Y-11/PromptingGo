@@ -1,0 +1,196 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Notifications.UserNotificationsViewModel
+
+@{
+    ViewData["Title"] = "Уведомления";
+}
+
+<section class="notifications-page">
+    <header class="moderation-page-header notifications-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Личный раздел
+            </div>
+
+            <h1 class="moderation-page-title">
+                Уведомления
+            </h1>
+
+            <p class="moderation-page-description">
+                Здесь отображаются решения модерации
+                по вашим промптам.
+            </p>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.UnreadCount
+            </span>
+
+            <span class="moderation-queue-count-label">
+                непрочитанных
+            </span>
+        </div>
+    </header>
+
+
+    @if (TempData["SuccessMessage"]
+    is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Notifications.Count > 0)
+    {
+        <div class="notifications-toolbar">
+            @if (Model.UnreadCount > 0)
+            {
+                <form asp-controller="Notifications"
+                      asp-action="MarkAllAsRead"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-outline-primary btn-sm">
+                        Отметить всё прочитанным
+                    </button>
+                </form>
+            }
+
+            @if (Model.ReadCount > 0)
+            {
+                <form asp-controller="Notifications"
+                      asp-action="DeleteReadNotifications"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="return confirm('Удалить все прочитанные уведомления?');">
+                        Удалить прочитанные
+                    </button>
+                </form>
+            }
+        </div>
+    }
+
+    @if (Model.Notifications.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Уведомлений пока нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                Когда модератор обработает ваши промпты,
+                здесь появятся сообщения.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="notifications-list">
+            @foreach (var notification in Model.Notifications)
+            {
+                var stateClass =
+                    notification.IsRead
+                        ? "notification-read"
+                        : "notification-unread";
+
+                <article class="notification-card @stateClass">
+                    <div>
+                        <div class="notification-tags">
+                            <span class="notebook-tag notebook-tag-blue">
+                                @notification.TypeName
+                            </span>
+
+                            @if (!notification.IsRead)
+                            {
+                                <span class="notebook-tag notebook-tag-green">
+                                    Новое
+                                </span>
+                            }
+                        </div>
+
+                        <h2>
+                            @notification.Title
+                        </h2>
+
+                        <p>
+                            @notification.Message
+                        </p>
+
+                        <div class="notification-date">
+                            <time datetime="@notification.CreatedAtUtc.ToUtcIsoString()"
+                                  data-local-datetime>
+                                @notification.CreatedAtUtc.ToString("dd.MM.yyyy HH:mm")
+                            </time>
+                        </div>
+                    </div>
+
+                    <div class="notification-actions">
+                    @if (notification.IsRead &&
+                         string.IsNullOrWhiteSpace(notification.Url))
+                    {
+                        <span class="notification-read-status">
+                            Прочитано
+                        </span>
+                    }
+                    else
+                    {
+                        <form asp-controller="Notifications"
+                              asp-action="MarkAsRead"
+                              asp-route-id="@notification.Id"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            @if (!string.IsNullOrWhiteSpace(notification.Url))
+                            {
+                                <button type="submit"
+                                        class="btn btn-primary btn-sm">
+                                    Открыть
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit"
+                                        class="btn btn-outline-primary btn-sm">
+                                    Отметить прочитанным
+                                </button>
+                            }
+                        </form>
+                    }
+
+                    <form asp-controller="Notifications"
+                          asp-action="DeleteNotification"
+                          asp-route-id="@notification.Id"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Удалить это уведомление?');">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+
+                </article>
+            }
+        </div>
+    }
+</section>

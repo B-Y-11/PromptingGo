@@ -1,0 +1,93 @@
+﻿@model PromptHub.Web.Models.ViewModels.Navigation.CatalogNavigationViewModel
+
+@{
+    var currentCategory =
+        ViewContext.RouteData.Values["category"]
+            ?.ToString()
+        ?? Context.Request.Query["category"]
+            .ToString();
+
+    var currentTag =
+        ViewContext.RouteData.Values["tag"]
+            ?.ToString()
+        ?? Context.Request.Query["tag"]
+            .ToString();
+}
+
+<div class="catalog-nav-mega"
+     aria-label="Разделы каталога">
+
+    <section class="catalog-nav-section"
+             aria-labelledby="catalog-nav-categories-title">
+
+        <div id="catalog-nav-categories-title"
+             class="catalog-nav-section-title">
+            Категории
+        </div>
+
+        <div class="catalog-nav-list">
+            @foreach (var category in Model.Categories)
+            {
+                var isCurrent =
+                    string.Equals(
+                        currentCategory,
+                        category.Slug,
+                        StringComparison.OrdinalIgnoreCase);
+
+                <a asp-route="PromptsCategory"
+                   asp-route-category="@category.Slug"
+                   class="catalog-nav-menu-link @(isCurrent ? "is-current" : string.Empty)">
+                    <span>@category.Name</span>
+                    <span class="catalog-nav-item-count">
+                        @category.PromptCount
+                    </span>
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="catalog-nav-section"
+             aria-labelledby="catalog-nav-tags-title">
+
+        <div id="catalog-nav-tags-title"
+             class="catalog-nav-section-title">
+            Популярные теги
+        </div>
+
+        <div class="catalog-nav-list catalog-nav-tag-list">
+            @foreach (var tag in Model.PopularTags)
+            {
+                var isCurrent =
+                    string.Equals(
+                        currentTag,
+                        tag.Slug,
+                        StringComparison.OrdinalIgnoreCase);
+
+                <a asp-route="PromptsTag"
+                   asp-route-tag="@tag.Slug"
+                   class="catalog-nav-menu-link catalog-nav-tag-link @(isCurrent ? "is-current" : string.Empty)">
+                    <span>#@tag.Name</span>
+                    <span class="catalog-nav-item-count">
+                        @tag.PromptCount
+                    </span>
+                </a>
+            }
+        </div>
+
+        <a asp-route="PromptsTags"
+           class="catalog-nav-more-link">
+            Все теги →
+        </a>
+    </section>
+
+    <div class="catalog-nav-footer">
+        <a asp-route="PromptsCatalog"
+           class="catalog-nav-all-link">
+            Все промпты →
+        </a>
+
+        <span class="catalog-nav-footer-note">
+            Категории и самые наполненные теги
+        </span>
+    </div>
+</div>

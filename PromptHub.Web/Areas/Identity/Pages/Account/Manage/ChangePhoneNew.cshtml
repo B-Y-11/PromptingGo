@@ -1,0 +1,83 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.Manage.ChangePhoneNewModel
+
+@{
+    ViewData["Title"] = "Новый номер телефона";
+    Layout = "_ManageLayout";
+}
+
+<section class="account-content-sheet">
+    <header class="account-section-header">
+        <div>
+            <div class="account-section-kicker">
+                Безопасность
+            </div>
+
+            <h2>
+                Новый номер телефона
+            </h2>
+
+            <p>
+                Введите новый номер.
+                Мы отправим на него код подтверждения.
+            </p>
+        </div>
+    </header>
+
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <form method="post"
+          class="account-profile-fields">
+
+        <input asp-for="Continuation"
+               type="hidden" />
+
+        <div class="mb-4">
+            <label class="form-label">
+                Текущий номер
+            </label>
+
+            <input class="form-control"
+                   value="@Model.MaskedCurrentPhoneNumber"
+                   disabled />
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Input.PhoneNumber"
+                   class="form-label">
+            </label>
+
+            <input asp-for="Input.PhoneNumber"
+                   class="form-control"
+                   type="tel"
+                   inputmode="tel"
+                   autocomplete="tel"
+                   placeholder="+7 999 123-45-67" />
+
+            <span asp-validation-for="Input.PhoneNumber"
+                  class="text-danger">
+            </span>
+
+            <div class="form-text">
+                Используйте международный формат.
+            </div>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Отправить код
+        </button>
+
+        <a asp-page="./SignInMethods"
+           class="btn btn-outline-secondary">
+            Отмена
+        </a>
+    </form>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

@@ -1,0 +1,180 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.ModerationQueueViewModel
+
+@{
+    ViewData["Title"] = "Модерация";
+}
+
+<section>
+    <header class="moderation-page-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Служебный лист
+            </div>
+
+            <h1 class="moderation-page-title">
+                Очередь модерации
+            </h1>
+
+            <p class="moderation-page-description">
+                Проверьте готовый текст, настройки конструктора
+                и пример результата перед публикацией.
+            </p>
+
+            <div class="moderation-report-links">
+
+                <a asp-controller="Moderation"
+                   asp-action="Dashboard"
+                   class="btn btn-outline-primary btn-sm">
+                    Панель модерации
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="Reports"
+                   class="btn btn-outline-primary btn-sm">
+                    Жалобы пользователей
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="ArchivedPrompts"
+                   class="btn btn-outline-primary btn-sm">
+                    Скрытые промпты
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Prompts.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                ожидают проверки
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Prompts.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Все записи проверены
+            </h2>
+
+            <p class="text-muted mb-0">
+                Сейчас в очереди нет промптов,
+                ожидающих решения модератора.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="moderation-queue-list">
+            @foreach (var prompt in Model.Prompts)
+            {
+                <article class="moderation-queue-card">
+                    <div class="moderation-queue-layout">
+                        <div>
+                            <div class="moderation-queue-tags">
+                                <span class="notebook-tag notebook-tag-purple">
+                                    На модерации
+                                </span>
+
+                                <span class="notebook-tag">
+                                    @prompt.CategoryName
+                                </span>
+
+                                @if (prompt.HasConstructor)
+                                {
+                                    <span class="notebook-tag notebook-tag-blue">
+                                        Есть конструктор
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="notebook-tag">
+                                        Только готовый текст
+                                    </span>
+                                }
+                            </div>
+
+                            @if (prompt.Tags.Count > 0)
+                            {
+                                <div class="moderation-prompt-tags">
+                                    @foreach (var tag in prompt.Tags)
+                                    {
+                                        <span class="prompt-tag-badge">
+                                            #@tag.Name
+                                        </span>
+                                    }
+                                </div>
+                            }
+
+                            <h2 class="moderation-queue-title">
+                                @prompt.Title
+                            </h2>
+
+                            <p class="moderation-queue-summary">
+                                @prompt.Summary
+                            </p>
+
+                            <div class="moderation-queue-meta">
+                                <span>
+                                    Автор:
+                                    @prompt.AuthorName
+                                </span>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    prompt.AuthorEmail))
+                                {
+                                    <span>
+                                        Email:
+                                        @prompt.AuthorEmail
+                                    </span>
+                                }
+
+                                @if (prompt.SubmittedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        Отправлен:
+
+                                        <time datetime="@prompt.SubmittedAtUtc.ToUtcIsoString()"
+                                              data-local-datetime>
+                                            @prompt.SubmittedAtUtc.Value
+                                            .ToString("dd.MM.yyyy HH:mm")
+                                        </time>
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <div>
+                            <a asp-controller="Moderation"
+                               asp-action="Review"
+                               asp-route-id="@prompt.Id"
+                               class="btn btn-primary">
+                                Проверить →
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

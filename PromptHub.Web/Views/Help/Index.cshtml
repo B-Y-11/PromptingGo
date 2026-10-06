@@ -1,0 +1,1442 @@
+﻿@{
+    ViewData["Title"] =
+        "Помощь";
+
+    ViewData["MetaDescription"] =
+        "Как пользоваться PromptingGo: поиск и настройка промптов, конструктор, избранное, публикация, модерация и управление аккаунтом.";
+
+    ViewData["Robots"] =
+        "noindex,follow";
+}
+
+<section class="help-page">
+    <header class="help-hero">
+        <div class="help-hero-kicker">
+            Справочник
+        </div>
+
+        <h1 class="help-hero-title">
+            Как пользоваться PromptingGo
+        </h1>
+
+        <p class="help-hero-description">
+            Коротко о том, как найти подходящий промпт,
+            настроить его под себя, сохранить понравившееся
+            и опубликовать собственную работу.
+        </p>
+
+        <div class="help-hero-actions">
+            <a asp-controller="Prompts"
+               asp-action="Index"
+               class="btn btn-primary">
+                Открыть каталог
+            </a>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Prompts"
+                   asp-action="Create"
+                   class="btn btn-outline-primary">
+                    Добавить промпт
+                </a>
+            }
+        </div>
+    </header>
+
+    <div class="help-layout">
+        <aside class="help-navigation">
+            <div class="help-navigation-title">
+                На этой странице
+            </div>
+
+            <nav aria-label="Разделы справки">
+                <a href="#quick-start">
+                    Быстрый старт
+                </a>
+
+                <a href="#catalog">
+                    Каталог и поиск
+                </a>
+
+                <a href="#prompt-page">
+                    Страница промпта
+                </a>
+
+                <a href="#constructor-guide">
+                    Как работает конструктор
+                </a>
+
+                <a href="#account">
+                    Аккаунт и избранное
+                </a>
+
+                <a href="#authors">
+                    Для авторов
+                </a>
+
+                <a href="#support">
+                    Поддержка авторов
+                </a>
+
+                <a href="#moderation">
+                    Модерация
+                </a>
+
+                <a href="#reports">
+                    Жалобы и безопасность
+                </a>
+            </nav>
+        </aside>
+
+        <main class="help-content">
+            <section id="quick-start"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        1
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Начало работы
+                        </div>
+
+                        <h2>
+                            Быстрый старт
+                        </h2>
+                    </div>
+                </div>
+
+                <p class="help-lead">
+                    Чтобы воспользоваться PromptingGo,
+                    необязательно создавать собственный промпт.
+                    Можно просто найти готовый вариант
+                    и сразу использовать его.
+                </p>
+
+                <div class="help-steps">
+                    <article class="help-step">
+                        <div class="help-step-number">
+                            1
+                        </div>
+
+                        <div>
+                            <h3>
+                                Найдите промпт
+                            </h3>
+
+                            <p>
+                                Откройте каталог и найдите
+                                подходящий вариант с помощью
+                                поиска, категорий и фильтров.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="help-step">
+                        <div class="help-step-number">
+                            2
+                        </div>
+
+                        <div>
+                            <h3>
+                                Откройте карточку
+                            </h3>
+
+                            <p>
+                                На странице промпта находится
+                                готовый текст, описание,
+                                инструкция и дополнительные
+                                материалы автора.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="help-step">
+                        <div class="help-step-number">
+                            3
+                        </div>
+
+                        <div>
+                            <h3>
+                                Настройте при необходимости
+                            </h3>
+
+                            <p>
+                                Если автор добавил конструктор,
+                                заполните нужные поля —
+                                PromptingGo подготовит
+                                вариант под вашу задачу.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article class="help-step">
+                        <div class="help-step-number">
+                            4
+                        </div>
+
+                        <div>
+                            <h3>
+                                Скопируйте
+                            </h3>
+
+                            <p>
+                                Скопируйте готовый текст
+                                и вставьте его в ChatGPT
+                                или другой ИИ-сервис.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="help-annotation">
+                    <div class="help-annotation-label">
+                        На заметку
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            PromptingGo не запускает нейросеть
+                        </h3>
+
+                        <p>
+                            Сервис помогает находить, хранить
+                            и настраивать промпты. Получившийся текст
+                            нужно скопировать и использовать
+                            в выбранном вами ИИ-сервисе.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="catalog"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        2
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Поиск
+                        </div>
+
+                        <h2>
+                            Каталог и фильтры
+                        </h2>
+                    </div>
+                </div>
+
+                <p>
+                    В каталоге собраны опубликованные
+                    промпты разных авторов.
+                    Чтобы быстрее найти нужный вариант,
+                    можно использовать несколько способов.
+                </p>
+
+                <div class="help-feature-grid">
+                    <article class="help-feature">
+                        <h3>
+                            Поиск
+                        </h3>
+
+                        <p>
+                            Введите задачу или ключевые слова,
+                            связанные с нужным промптом.
+                        </p>
+                    </article>
+
+                    <article class="help-feature">
+                        <h3>
+                            Категории
+                        </h3>
+
+                        <p>
+                            Помогают перейти к промптам
+                            определённой тематики.
+                        </p>
+                    </article>
+
+                    <article class="help-feature">
+                        <h3>
+                            Теги
+                        </h3>
+
+                        <p>
+                            Уточняют назначение
+                            и особенности промпта.
+                        </p>
+                    </article>
+
+                    <article class="help-feature">
+                        <h3>
+                            Сложность
+                        </h3>
+
+                        <p>
+                            Позволяет выбрать более простой
+                            или продвинутый вариант.
+                        </p>
+                    </article>
+
+                    <article class="help-feature">
+                        <h3>
+                            Сортировка
+                        </h3>
+
+                        <p>
+                            Помогает изменить порядок
+                            отображения промптов
+                            в каталоге.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="help-actions">
+                    <a asp-controller="Prompts"
+                       asp-action="Index"
+                       class="help-text-link">
+                        Перейти в каталог →
+                    </a>
+                </div>
+            </section>
+
+
+            <section id="prompt-page"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        3
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Использование
+                        </div>
+
+                        <h2>
+                            Что находится на странице промпта
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="help-prompt-parts">
+                    <article>
+                        <span class="help-part-number">
+                            1
+                        </span>
+
+                        <div>
+                            <h3>
+                                Готовый промпт
+                            </h3>
+
+                            <p>
+                                Полностью готовый текст,
+                                который можно сразу скопировать
+                                и использовать.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span class="help-part-number">
+                            2
+                        </span>
+
+                        <div>
+                            <h3>
+                                Настроить под себя
+                            </h3>
+
+                            <p>
+                                Этот раздел появляется,
+                                если автор добавил конструктор.
+                                Заполните предложенные поля,
+                                чтобы адаптировать промпт
+                                под конкретную задачу.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span class="help-part-number">
+                            3
+                        </span>
+
+                        <div>
+                            <h3>
+                                Результат настройки
+                            </h3>
+
+                            <p>
+                                Здесь появляется итоговый текст,
+                                сформированный на основании
+                                заполненных вами полей.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span class="help-part-number">
+                            4
+                        </span>
+
+                        <div>
+                            <h3>
+                                Примеры результата
+                            </h3>
+
+                            <p>
+                                Автор может показать текстовые
+                                примеры, изображения или другие
+                                материалы, помогающие понять,
+                                чего ожидать от промпта.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="help-annotation
+                    help-annotation-purple">
+                    <div class="help-annotation-label">
+                        Главное
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            Конструктор — дополнительный инструмент
+                        </h3>
+
+                        <p>
+                            Если у промпта нет раздела
+                            «Настроить под себя», это нормально.
+                            Готовый промпт остаётся основной
+                            частью публикации.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="constructor-guide"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        4
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Конструктор
+                        </div>
+
+                        <h2>
+                            Как настроить промпт под себя
+                        </h2>
+                    </div>
+                </div>
+
+                <p class="help-lead">
+                    Некоторые авторы добавляют к промпту
+                    конструктор. Он позволяет изменить нужные
+                    части готового текста без ручного
+                    редактирования самого промпта.
+                </p>
+
+                <div class="help-constructor-steps">
+                    <article>
+                        <div class="help-constructor-step-number">
+                            1
+                        </div>
+
+                        <div>
+                            <h3>
+                                Заполните поля
+                            </h3>
+
+                            <p>
+                                Автор заранее определяет,
+                                какие данные можно менять:
+                                например тему, цель, стиль ответа,
+                                количество пунктов или формат результата.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <div class="help-constructor-step-number">
+                            2
+                        </div>
+
+                        <div>
+                            <h3>
+                                Обратите внимание на звёздочку
+                            </h3>
+
+                            <p>
+                                Поля со знаком
+                                <strong>*</strong>
+                                обязательны.
+                                Без них собрать итоговый
+                                промпт не получится.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <div class="help-constructor-step-number">
+                            3
+                        </div>
+
+                        <div>
+                            <h3>
+                                Необязательные поля можно пропустить
+                            </h3>
+
+                            <p>
+                                Если поле необязательное,
+                                его можно оставить пустым.
+                                Связанная с ним дополнительная часть
+                                не будет добавлена в результат.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <div class="help-constructor-step-number">
+                            4
+                        </div>
+
+                        <div>
+                            <h3>
+                                Нажмите «Собрать мой промпт»
+                            </h3>
+
+                            <p>
+                                PromptingGo подставит выбранные
+                                значения в подготовленный автором
+                                шаблон и сформирует итоговый текст.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <div class="help-constructor-step-number">
+                            5
+                        </div>
+
+                        <div>
+                            <h3>
+                                Проверьте результат
+                            </h3>
+
+                            <p>
+                                Новый текст появится ниже
+                                в разделе «Результат настройки».
+                                Его можно прочитать перед использованием.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <div class="help-constructor-step-number">
+                            6
+                        </div>
+
+                        <div>
+                            <h3>
+                                Скопируйте готовый вариант
+                            </h3>
+
+                            <p>
+                                Если всё подходит,
+                                нажмите «Скопировать»
+                                и вставьте промпт
+                                в нужный ИИ-сервис.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="help-constructor-example">
+                    <div class="help-constructor-example-heading">
+                        Небольшой пример
+                    </div>
+
+                    <div class="help-constructor-example-fields">
+                        <div class="help-constructor-example-field">
+                            <span>
+                                Тема *
+                            </span>
+
+                            <div>
+                                Подготовка к собеседованию
+                            </div>
+                        </div>
+
+                        <div class="help-constructor-example-field">
+                            <span>
+                                Формат ответа
+                            </span>
+
+                            <div>
+                                Пошаговый план
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-constructor-example-button">
+                        Собрать мой промпт
+                    </div>
+
+                    <div class="help-constructor-example-result">
+                        <span>
+                            Результат настройки
+                        </span>
+
+                        <p>
+                            Итоговый промпт будет составлен
+                            с учётом введённой темы
+                            и выбранного формата ответа.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="help-annotation
+                    help-annotation-purple">
+                    <div class="help-annotation-label">
+                        Как это работает
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            Конструктор сам не обращается к нейросети
+                        </h3>
+
+                        <p>
+                            Он только собирает текст из шаблона,
+                            подготовленного автором промпта.
+                            После этого готовый результат
+                            вы самостоятельно отправляете
+                            в ChatGPT или другой ИИ-сервис.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="account"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        5
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Личный кабинет
+                        </div>
+
+                        <h2>
+                            Аккаунт и избранное
+                        </h2>
+                    </div>
+                </div>
+
+                <p>
+                    Просматривать каталог и читать промпты
+                    можно без собственного контента.
+                    Аккаунт открывает дополнительные возможности.
+                </p>
+
+                <ul class="help-check-list">
+                    <li>
+                        добавлять промпты в избранное;
+                    </li>
+
+                    <li>
+                        ставить оценки;
+                    </li>
+
+                    <li>
+                        оставлять комментарии;
+                    </li>
+
+                    <li>
+                        отправлять жалобы на материалы;
+                    </li>
+
+                    <li>
+                        создавать и публиковать свои промпты;
+                    </li>
+
+                    <li>
+                        получать уведомления о важных событиях.
+                    </li>
+                </ul>
+
+                <h3 class="help-subheading">
+                    Способы входа
+                </h3>
+
+                <p>
+                    Для создания аккаунта и входа
+                    в PromptingGo используется email и пароль.
+                    Email также нужен для подтверждения аккаунта
+                    и восстановления доступа. Он не отображается
+                    в публичном профиле и не показывается другим пользователям.
+                </p>
+
+                <div class="help-actions">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Prompts"
+                           asp-action="Favorites"
+                           class="help-text-link">
+                            Открыть избранное →
+                        </a>
+
+                        <a asp-area="Identity"
+                           asp-page="/Account/Manage/SignInMethods"
+                           class="help-text-link">
+                            Способы входа →
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity"
+                           asp-page="/Account/Login"
+                           class="help-text-link">
+                            Войти →
+                        </a>
+
+                        <a asp-area="Identity"
+                           asp-page="/Account/Register"
+                           class="help-text-link">
+                            Зарегистрироваться →
+                        </a>
+                    }
+                </div>
+            </section>
+
+
+            <section id="authors"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        6
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Публикация
+                        </div>
+
+                        <h2>
+                            Для авторов
+                        </h2>
+                    </div>
+                </div>
+
+                <p>
+                    Любой пользователь с аккаунтом
+                    может подготовить собственный промпт
+                    и отправить его на публикацию.
+                </p>
+
+                <p>
+                    Имя на сайте (псевдоним) и дата регистрации
+                    отображаются в публичном профиле автора.
+                    Описание и изображение профиля становятся публичными,
+                    только если пользователь сам их добавил.
+                    Настоящее имя и личную фотографию указывать не требуется.
+                </p>
+
+                <div class="help-author-flow">
+                    <article>
+                        <span>
+                            1
+                        </span>
+
+                        <div>
+                            <h3>
+                                Создайте черновик
+                            </h3>
+
+                            <p>
+                                Укажите название, краткое описание,
+                                категорию, теги и сложность.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>
+                            2
+                        </span>
+
+                        <div>
+                            <h3>
+                                Добавьте готовый промпт
+                            </h3>
+
+                            <p>
+                                Он должен быть полноценным
+                                и работать самостоятельно,
+                                даже без конструктора.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>
+                            3
+                        </span>
+
+                        <div>
+                            <h3>
+                                Добавьте настройки
+                            </h3>
+
+                            <p>
+                                При необходимости включите
+                                конструктор и определите поля,
+                                которые пользователь сможет
+                                заполнять самостоятельно.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>
+                            4
+                        </span>
+
+                        <div>
+                            <h3>
+                                Добавьте пояснения
+                            </h3>
+
+                            <p>
+                                Можно указать инструкцию,
+                                пример результата и загрузить
+                                полезные изображения.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>
+                            5
+                        </span>
+
+                        <div>
+                            <h3>
+                                Проверьте предпросмотр
+                            </h3>
+
+                            <p>
+                                До отправки на модерацию
+                                убедитесь, что текст,
+                                оформление и конструктор
+                                работают так, как задумано.
+                            </p>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>
+                            6
+                        </span>
+
+                        <div>
+                            <h3>
+                                Отправьте на модерацию
+                            </h3>
+
+                            <p>
+                                После проверки промпт
+                                сможет появиться
+                                в общем каталоге.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div id="author-constructor"
+                     class="help-author-constructor">
+                    <div class="help-section-subheading">
+                        Конструктор для автора
+                    </div>
+
+                    <h3 class="help-subheading">
+                        Как автору добавить настраиваемые поля
+                    </h3>
+
+                    <p>
+                        Конструктор нужен, если вы хотите,
+                        чтобы пользователь не редактировал
+                        текст промпта вручную, а просто
+                        заполнил несколько полей:
+                        например тему, стиль ответа,
+                        аудиторию, формат или цель.
+                    </p>
+
+                    <div class="help-constructor-steps help-constructor-steps-author">
+                        <article>
+                            <div class="help-constructor-step-number">
+                                1
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Сначала напишите готовый промпт
+                                </h3>
+
+                                <p>
+                                    Основа публикации — это полноценный
+                                    готовый промпт. Он должен быть полезным
+                                    даже сам по себе, без конструктора.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article>
+                            <div class="help-constructor-step-number">
+                                2
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Решите, что пользователь сможет менять
+                                </h3>
+
+                                <p>
+                                    Подумайте, какие части промпта
+                                    действительно удобно настраивать:
+                                    тему, стиль, роль, объём,
+                                    формат ответа, аудиторию и так далее.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article>
+                            <div class="help-constructor-step-number">
+                                3
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Добавьте поля конструктора
+                                </h3>
+
+                                <p>
+                                    Для каждого настраиваемого элемента
+                                    создайте отдельное поле:
+                                    задайте название, тип поля
+                                    и при необходимости подсказку.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article>
+                            <div class="help-constructor-step-number">
+                                4
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Отметьте обязательные поля
+                                </h3>
+
+                                <p>
+                                    Если без значения нельзя собрать
+                                    нормальный результат,
+                                    сделайте поле обязательным.
+                                    Необязательные поля пользователь
+                                    сможет пропустить.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article>
+                            <div class="help-constructor-step-number">
+                                5
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Соберите шаблон результата
+                                </h3>
+
+                                <p>
+                                    Конструктор не пишет промпт сам.
+                                    Он подставляет значения пользователя
+                                    в подготовленный вами шаблон
+                                    и формирует итоговый текст.
+                                </p>
+                            </div>
+                        </article>
+
+                        <article>
+                            <div class="help-constructor-step-number">
+                                6
+                            </div>
+
+                            <div>
+                                <h3>
+                                    Проверьте результат как пользователь
+                                </h3>
+
+                                <p>
+                                    Перед отправкой на модерацию
+                                    обязательно протестируйте:
+                                    заполните поля,
+                                    соберите итоговый промпт
+                                    и посмотрите, всё ли выглядит логично.
+                                </p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="help-constructor-example help-constructor-example-author">
+                        <div class="help-constructor-example-heading">
+                            Пример для автора
+                        </div>
+
+                        <div class="help-constructor-author-template">
+                            <div class="help-constructor-author-template-title">
+                                Что хочет сделать автор
+                            </div>
+
+                            <p>
+                                Автор публикует промпт
+                                «Выступи в роли редактора
+                                и напиши текст по теме».
+                            </p>
+
+                            <div class="help-constructor-author-fields">
+                                <div class="help-constructor-author-field">
+                                    <span>
+                                        Поле 1
+                                    </span>
+                                    <div>
+                                        Тема статьи *
+                                    </div>
+                                </div>
+
+                                <div class="help-constructor-author-field">
+                                    <span>
+                                        Поле 2
+                                    </span>
+                                    <div>
+                                        Стиль текста
+                                    </div>
+                                </div>
+
+                                <div class="help-constructor-author-field">
+                                    <span>
+                                        Поле 3
+                                    </span>
+                                    <div>
+                                        Для кого текст
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="help-constructor-author-template-result">
+                                <span>
+                                    Как это будет работать
+                                </span>
+
+                                <p>
+                                    Пользователь заполнит эти поля,
+                                    а PromptingGo подставит значения
+                                    в ваш шаблон и соберёт итоговый промпт,
+                                    например:
+                                </p>
+
+                                <div class="help-constructor-author-result-card">
+                                    Выступи в роли редактора.
+                                    Напиши текст на тему
+                                    «подготовка к собеседованию».
+                                    Используй деловой стиль.
+                                    Адаптируй текст для студентов.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-annotation help-annotation-purple">
+                        <div class="help-annotation-label">
+                            Для автора
+                        </div>
+
+                        <div class="help-annotation-content">
+                            <h3>
+                                Хороший конструктор делает промпт проще, а не сложнее
+                            </h3>
+
+                            <p>
+                                Не нужно превращать публикацию
+                                в огромную анкету.
+                                Лучше добавить только те поля,
+                                которые действительно помогают
+                                адаптировать промпт под задачу пользователя.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="help-annotation
+                    help-annotation-yellow">
+                    <div class="help-annotation-label">
+                        После публикации
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            Опубликованный промпт можно редактировать
+                        </h3>
+
+                        <p>
+                            Для изменений создаётся рабочая версия.
+                            Пока она проходит проверку,
+                            посетители продолжают видеть
+                            уже опубликованный вариант.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="help-actions">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Prompts"
+                           asp-action="Create"
+                           class="help-text-link">
+                            Добавить промпт →
+                        </a>
+
+                        <a asp-controller="Prompts"
+                           asp-action="My"
+                           class="help-text-link">
+                            Мои промпты →
+                        </a>
+                    }
+
+                    <a asp-route="LegalContentRules"
+                       class="help-text-link">
+                        Правила публикации →
+                    </a>
+                </div>
+            </section>
+
+
+            <section id="support"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        7
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Благодарность
+                        </div>
+
+                        <h2>
+                            Поддержка авторов
+                        </h2>
+                    </div>
+                </div>
+
+                <p class="help-lead">
+                    Если промпт оказался полезным,
+                    его автора можно добровольно поддержать.
+                    Поддержка не открывает дополнительный контент
+                    и не является платой за использование промпта.
+                </p>
+
+                <div class="help-feature-grid">
+                    <article class="help-feature">
+                        <h3>
+                            Если вы пользуетесь промптом
+                        </h3>
+
+                        <p>
+                            Если автор включил поддержку,
+                            на странице его промпта
+                            появится кнопка «Поддержать автора».
+                        </p>
+
+                        <p>
+                            Выберите 50 ₽, 100 ₽, 200 ₽
+                            или укажите другую сумму,
+                            а затем выберите удобный сервис:
+                            CloudTips или ЮMoney.
+                        </p>
+
+                        <p>
+                            Регистрация в PromptingGo
+                            для добровольной поддержки не требуется.
+                        </p>
+                    </article>
+
+                    <article class="help-feature">
+                        <h3>
+                            Если вы автор
+                        </h3>
+
+                        <p>
+                            Откройте личный кабинет
+                            и перейдите в раздел
+                            «Поддержка автора».
+                        </p>
+
+                        <p>
+                            Там можно подключить CloudTips,
+                            ЮMoney или сразу оба сервиса.
+                            После этого посетитель сам выберет,
+                            каким способом ему удобнее
+                            вас поддержать.
+                        </p>
+
+                        <p>
+                            Любой способ поддержки
+                            можно временно отключить,
+                            не удаляя остальные настройки.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="help-annotation help-annotation-purple">
+                    <div class="help-annotation-label">
+                        Как проходит перевод
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            PromptingGo не принимает деньги
+                        </h3>
+
+                        <p>
+                            После выбора суммы перевод
+                            выполняется на стороне CloudTips
+                            или ЮMoney.
+                            PromptingGo не хранит данные
+                            банковской карты и не получает
+                            переведённые автору средства.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="help-annotation help-annotation-yellow">
+                    <div class="help-annotation-label">
+                        Только добровольно
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            Промпт остаётся доступным независимо от поддержки
+                        </h3>
+
+                        <p>
+                            Автор не может требовать перевод
+                            для получения полного промпта,
+                            конструктора, примера результата
+                            или других частей публикации.
+                        </p>
+                    </div>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="help-actions">
+                        <a asp-area="Identity"
+                           asp-page="/Account/Manage/AuthorSupport"
+                           class="help-text-link">
+                            Настроить поддержку →
+                        </a>
+                    </div>
+                }
+            </section>
+
+
+            <section id="moderation"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        8
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Проверка
+                        </div>
+
+                        <h2>
+                            Статусы и модерация
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="help-status-list">
+                    <article>
+                        <span class="help-status-badge help-status-draft">
+                            Черновик
+                        </span>
+
+                        <p>
+                            Промпт сохранён,
+                            но ещё не отправлен
+                            на модерацию.
+                        </p>
+                    </article>
+
+                    <article>
+                        <span class="help-status-badge help-status-pending">
+                            На модерации
+                        </span>
+
+                        <p>
+                            Материал отправлен
+                            на проверку модератору.
+                        </p>
+                    </article>
+
+                    <article>
+                        <span class="help-status-badge help-status-published">
+                            Опубликован
+                        </span>
+
+                        <p>
+                            Промпт доступен посетителям
+                            в публичном каталоге.
+                        </p>
+                    </article>
+
+                    <article>
+                        <span class="help-status-badge help-status-rejected">
+                            Отклонён
+                        </span>
+
+                        <p>
+                            Материал требует изменений.
+                            Посмотрите комментарий модератора,
+                            исправьте промпт и отправьте
+                            его повторно.
+                        </p>
+                    </article>
+
+                    <article>
+                        <span class="help-status-badge help-status-archived">
+                            В архиве
+                        </span>
+
+                        <p>
+                            Промпт скрыт из публичного каталога
+                            и находится в архиве автора.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+
+            <section id="reports"
+                     class="help-sheet">
+
+                <div class="help-section-heading">
+                    <span class="help-section-number">
+                        9
+                    </span>
+
+                    <div>
+                        <div class="help-section-kicker">
+                            Безопасность
+                        </div>
+
+                        <h2>
+                            Жалобы и спорные материалы
+                        </h2>
+                    </div>
+                </div>
+
+                <p>
+                    Если промпт или комментарий нарушает
+                    правила PromptingGo, на него можно
+                    отправить жалобу.
+                </p>
+
+                <p>
+                    Жалоба передаётся модераторам.
+                    Автор материала не получает
+                    ваш email через форму жалобы.
+                </p>
+
+                <div class="help-annotation
+                    help-annotation-red">
+                    <div class="help-annotation-label">
+                        Когда жаловаться
+                    </div>
+
+                    <div class="help-annotation-content">
+                        <h3>
+                            Жалоба — не оценка качества
+                        </h3>
+
+                        <p>
+                            Если промпт просто не подошёл
+                            для вашей задачи, жалоба не нужна.
+                            Используйте её при нарушении правил,
+                            спорном или опасном содержимом.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="help-actions">
+                    <a asp-route="LegalContentRules"
+                       class="help-text-link">
+                        Открыть правила публикации →
+                    </a>
+                </div>
+            </section>
+
+
+            <section class="help-bottom-card">
+                <div>
+                    <div class="help-section-kicker">
+                        Можно начинать
+                    </div>
+
+                    <h2>
+                        Найдите первый промпт
+                    </h2>
+
+                    <p>
+                        Откройте каталог, выберите задачу
+                        и попробуйте готовый вариант
+                        или настройте его под себя.
+                    </p>
+                </div>
+
+                <a asp-controller="Prompts"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Перейти в каталог
+                </a>
+            </section>
+        </main>
+    </div>
+</section>

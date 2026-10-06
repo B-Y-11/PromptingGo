@@ -1,0 +1,262 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Admin.UserAdministrationViewModel
+
+@{
+    ViewData["Title"] = "Пользователи";
+}
+
+<section class="admin-users-page">
+    <header class="moderation-page-header admin-users-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Администрирование
+            </div>
+
+            <h1 class="moderation-page-title">
+                Пользователи
+            </h1>
+
+            <p class="moderation-page-description">
+                Управление ролями и быстрый просмотр
+                активности авторов в PromptingGo.
+            </p>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Users.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                аккаунтов
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Users.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Пользователей нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                В системе пока нет зарегистрированных аккаунтов.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-user-list">
+            @foreach (var user in Model.Users)
+            {
+                var userInitial =
+                    string.IsNullOrWhiteSpace(user.DisplayName)
+                        ? "U"
+                        : user.DisplayName.Trim()[0]
+                            .ToString()
+                            .ToUpperInvariant();
+
+                    <article class="admin-user-card">
+                        <div class="admin-user-main">
+                            <div class="admin-user-avatar">
+                                @userInitial
+                            </div>
+
+                        <div>
+                            <div class="admin-user-title-row">
+                                <h2>
+                                    @user.DisplayName
+                                </h2>
+
+                                @if (user.IsCurrentUser)
+                                {
+                                    <span class="notebook-tag notebook-tag-blue">
+                                        Это вы
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="admin-user-email">
+                                @user.Email
+                            </div>
+
+                            <div class="admin-user-roles">
+                                @if (user.IsAdministrator)
+                                {
+                                    <span class="notebook-tag notebook-tag-purple">
+                                        Administrator
+                                    </span>
+                                }
+
+                                @if (user.IsModerator)
+                                {
+                                    <span class="notebook-tag notebook-tag-blue">
+                                        Moderator
+                                    </span>
+                                }
+
+                                @if (!user.IsAdministrator &&
+                                     !user.IsModerator)
+                                {
+                                    <span class="notebook-tag">
+                                        User
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="admin-user-created">
+                                Зарегистрирован:
+
+                                <time datetime="@user.CreatedAtUtc.ToUtcIsoString()"
+                                      data-local-date>
+                                    @user.CreatedAtUtc.ToString("dd.MM.yyyy")
+                                </time>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-user-stats-grid">
+                        <div class="admin-user-stat">
+                            <span>
+                                Всего
+                            </span>
+
+                            <strong>
+                                @user.TotalPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Опубликовано
+                            </span>
+
+                            <strong>
+                                @user.PublishedPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                На проверке
+                            </span>
+
+                            <strong>
+                                @user.PendingPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Черновики
+                            </span>
+
+                            <strong>
+                                @user.DraftPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Скрыто
+                            </span>
+
+                            <strong>
+                                @user.ArchivedPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Просмотры
+                            </span>
+
+                            <strong>
+                                @user.TotalViewCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Копирования
+                            </span>
+
+                            <strong>
+                                @user.TotalCopyCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Жалобы
+                            </span>
+
+                            <strong>
+                                @user.SubmittedReportsCount
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="admin-user-actions">
+                        <a asp-controller="Authors"
+                           asp-action="Details"
+                           asp-route-id="@user.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            Профиль автора
+                        </a>
+
+                        @if (!user.IsModerator)
+                        {
+                            <form asp-controller="Admin"
+                                  asp-action="MakeModerator"
+                                  asp-route-id="@user.Id"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-primary btn-sm"
+                                        onclick="return confirm('Назначить пользователя модератором?');">
+                                    Назначить модератором
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="Admin"
+                                  asp-action="RemoveModerator"
+                                  asp-route-id="@user.Id"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Снять роль модератора?');">
+                                    Снять модератора
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

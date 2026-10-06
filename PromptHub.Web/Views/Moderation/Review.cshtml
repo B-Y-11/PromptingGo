@@ -1,0 +1,697 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.ModerationReviewViewModel
+
+@{
+    ViewData["Title"] = "Проверка промпта";
+}
+
+<a asp-controller="Moderation"
+   asp-action="Index"
+   class="moderation-back-link">
+    ← Вернуться к очереди
+</a>
+
+@if (TempData["ErrorMessage"]
+    is string errorMessage)
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (TempData["SuccessMessage"]
+    is string successMessage)
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+
+<header class="moderation-review-header">
+    <div class="moderation-review-tags">
+        <span class="notebook-tag notebook-tag-purple">
+            На модерации
+        </span>
+
+        <span class="notebook-tag">
+            @Model.CategoryName
+        </span>
+
+        <span class="notebook-tag notebook-tag-blue">
+            @Model.DifficultyName
+        </span>
+
+        @if (Model.HasConstructor)
+        {
+            <span class="notebook-tag">
+                Есть конструктор
+            </span>
+        }
+    </div>
+
+    @if (Model.Tags.Count > 0)
+    {
+        <div class="moderation-prompt-tags moderation-review-prompt-tags">
+            @foreach (var tag in Model.Tags)
+            {
+                <span class="prompt-tag-badge">
+                    #@tag.Name
+                </span>
+            }
+        </div>
+    }
+
+    <h1 class="moderation-review-title">
+        @Model.Title
+    </h1>
+
+    <p class="moderation-review-summary">
+        @Model.Summary
+    </p>
+
+    <div class="moderation-review-meta">
+        <span>
+            Автор: @Model.AuthorName
+        </span>
+
+        @if (!string.IsNullOrWhiteSpace(
+            Model.AuthorEmail))
+        {
+            <span>
+                Email: @Model.AuthorEmail
+            </span>
+        }
+
+        @if (Model.SubmittedAtUtc.HasValue)
+        {
+            <span>
+                Отправлен:
+
+                <time datetime="@Model.SubmittedAtUtc.ToUtcIsoString()"
+                      data-local-datetime>
+                    @Model.SubmittedAtUtc.Value
+                    .ToString("dd.MM.yyyy HH:mm")
+                </time>
+            </span>
+        }
+    </div>
+</header>
+
+<div class="moderation-review-layout">
+    <main class="moderation-review-main">
+
+        <section class="moderation-review-sheet">
+            <div class="d-flex
+                flex-wrap
+                justify-content-between
+                align-items-start
+                gap-3">
+
+                <div>
+                    <h2 class="mb-2">
+                        Проверка на дубликаты
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Поиск похожих материалов среди уже опубликованных
+                        промптов PromptingGo.
+                    </p>
+                </div>
+
+                <a asp-controller="Moderation"
+                   asp-action="Review"
+                   asp-route-id="@Model.Id"
+                   asp-route-checkDuplicates="true"
+                   class="btn btn-outline-primary">
+
+                    @(Model.DuplicateCheckPerformed
+                        ? "Проверить ещё раз"
+                        : "Проверить на дубликаты")
+                </a>
+            </div>
+
+            @if (Model.DuplicateCheckPerformed)
+            {
+                <hr />
+
+                @if (Model.DuplicateMatches.Count == 0)
+                {
+                    <div class="alert alert-success mb-0">
+                        Существенно похожих опубликованных промптов
+                        в базе не найдено.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary">
+                        Процент показывает текстовое сходство материалов
+                        и не является автоматическим выводом о плагиате.
+                        Итоговое решение принимает модератор.
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var match in Model.DuplicateMatches)
+                        {
+                            var similarityBadgeClass =
+                                match.SimilarityPercent >= 85
+                                    ? "text-bg-danger"
+                                    : match.SimilarityPercent >= 70
+                                        ? "text-bg-warning"
+                                        : match.SimilarityPercent >= 50
+                                            ? "text-bg-info"
+                                            : "text-bg-secondary";
+
+                            var similarityLabel =
+                                match.SimilarityPercent >= 85
+                                    ? "Очень высокое сходство"
+                                    : match.SimilarityPercent >= 70
+                                        ? "Высокое сходство"
+                                        : match.SimilarityPercent >= 50
+                                            ? "Заметное сходство"
+                                            : "Слабое сходство";
+
+                            <article class="border rounded p-3">
+                                <div class="d-flex
+                                    flex-wrap
+                                    justify-content-between
+                                    align-items-start
+                                    gap-3">
+
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex
+                                            flex-wrap
+                                            align-items-center
+                                            gap-2
+                                            mb-2">
+
+                                            <span class="badge
+                                                @similarityBadgeClass
+                                                fs-6">
+                                                @match.SimilarityPercent%
+                                            </span>
+
+                                            <strong>
+                                                @similarityLabel
+                                            </strong>
+                                        </div>
+
+                                        <h3 class="h5 mb-2">
+                                            @match.Title
+                                        </h3>
+
+                                        <div class="small text-muted">
+                                            Автор:
+                                            <strong>
+                                                @match.AuthorName
+                                            </strong>
+
+                                            @if (match.PublishedAtUtc.HasValue)
+                                            {
+                                                <span>
+                                                    · опубликован
+                                                </span>
+
+                                                <time datetime="@match.PublishedAtUtc.Value.ToString("O")">
+                                                    @match.PublishedAtUtc.Value
+                                                    .ToString("dd.MM.yyyy")
+                                                </time>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex
+                                        flex-wrap
+                                        gap-2">
+
+                                        <a asp-controller="Prompts"
+                                           asp-action="Details"
+                                           asp-route-slug="@match.Slug"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="btn btn-outline-secondary btn-sm">
+
+                                            Открыть промпт
+                                        </a>
+
+                                        @if (match.SimilarityPercent >= 70)
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    data-duplicate-rejection-title="@match.Title">
+
+                                                Использовать как причину
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-1">
+                                    <div class="col-sm-6">
+                                        <div class="small text-muted">
+                                            Готовый текст
+                                        </div>
+
+                                        <strong>
+                                            @match.ReadyTextSimilarityPercent%
+                                        </strong>
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <div class="small text-muted">
+                                            Шаблон конструктора
+                                        </div>
+
+                                        <strong>
+                                            @match.TemplateTextSimilarityPercent%
+                                        </strong>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            }
+        </section>
+
+        <section class="moderation-review-sheet">
+            <h2>
+                Готовый промпт
+            </h2>
+
+            <pre class="moderation-review-text">@Model.ReadyText</pre>
+        </section>
+
+        @if (Model.HasConstructor)
+        {
+            <section class="moderation-review-sheet constructor-review">
+                <h2>
+                    Настраиваемая версия
+                </h2>
+
+                <pre class="moderation-review-text">@Model.ConstructorText</pre>
+
+                <div class="moderation-variables-wrapper">
+                    <h3>
+                        Заполняемые поля
+                    </h3>
+
+                    <div class="table-responsive moderation-variable-table">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Тип</th>
+                                    <th>Обязательное</th>
+                                    <th>Пример заполнения</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var variable in Model.Variables)
+                                {
+                                    <tr>
+                                        <td>
+                                            @variable.Label
+                                        </td>
+
+                                        <td>
+                                            @variable.TypeName
+                                        </td>
+
+                                        <td>
+                                            @(variable.IsRequired
+                                                ? "Да"
+                                                : "Нет")
+                                        </td>
+
+                                        <td>
+                                            @(string.IsNullOrWhiteSpace(
+                                                variable.Placeholder)
+                                                ? "—"
+                                                : variable.Placeholder)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        }
+
+        <div class="moderation-secondary-grid">
+            <section class="moderation-small-note">
+                <h2>
+                    Инструкция
+                </h2>
+
+                <div class="moderation-small-note-content">
+                    @(string.IsNullOrWhiteSpace(
+                        Model.UsageInstructions)
+                        ? "Автор не добавил инструкцию."
+                        : Model.UsageInstructions)
+                </div>
+            </section>
+
+            <section class="moderation-small-note">
+                <h2>
+                    Пример результата
+                </h2>
+
+                <div class="moderation-small-note-content">
+                    @(string.IsNullOrWhiteSpace(
+                        Model.ExampleResult)
+                        ? "Автор не добавил пример результата."
+                        : Model.ExampleResult)
+                </div>
+            </section>
+        </div>
+
+        @* -------------------------------------------------------------------------
+           EN: Prompt result media
+           RU: Медиа с примерами результата промпта
+           ------------------------------------------------------------------------- *@
+
+        @if (Model.MediaItems.Count > 0)
+        {
+            <section class="moderation-review-sheet">
+                <h2>
+                    Примеры результата
+                </h2>
+
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var media in Model.MediaItems)
+                    {
+                        var imageUrl =
+                            Url.RouteUrl(
+                                "PromptMediaThumbnail",
+                                new
+                                {
+                                    id = media.Id
+                                });
+
+                        <div class="col">
+                            <article class="card h-100">
+                                <img src="@imageUrl"
+                                     alt="@(string.IsNullOrWhiteSpace(media.AltText)
+                                                                 ? "Пример результата промпта"
+                                                                 : media.AltText)"
+                                     class="card-img-top"
+                                     style="height: 320px; object-fit: contain; background: #f4f1e8;" />
+
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <span class="badge text-bg-warning">
+                                            @media.StatusName
+                                        </span>
+
+                                        @if (media.IsCover)
+                                        {
+                                            <span class="badge text-bg-primary">
+                                                Обложка
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        media.Caption))
+                                    {
+                                        <p class="card-text mb-0">
+                                            @media.Caption
+                                        </p>
+                                    }
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+    </main>
+
+    <aside class="moderation-review-sidebar">
+        <section class="moderation-sidebar-note">
+            <h2>
+                Автор публикации
+            </h2>
+
+            <ul class="moderation-author-list">
+                <li>
+                    Имя
+                    <strong>
+                        @Model.AuthorName
+                    </strong>
+                </li>
+
+                <li>
+                    Email
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(
+                            Model.AuthorEmail)
+                            ? "Не указан"
+                            : Model.AuthorEmail)
+                    </strong>
+                </li>
+
+                <li>
+                    Категория
+                    <strong>
+                        @Model.CategoryName
+                    </strong>
+                </li>
+
+                <li>
+                    Сложность
+                    <strong>
+                        @Model.DifficultyName
+                    </strong>
+                </li>
+            </ul>
+        </section>
+
+        <section class="moderation-sidebar-note moderation-category-editor">
+            <h2>
+                Категория промпта
+            </h2>
+
+            @if (!Model.CategoryIsActive)
+            {
+                <div class="moderation-category-warning">
+                    Текущая категория скрыта.
+                    Перед публикацией выберите активную категорию.
+                </div>
+            }
+
+            <form asp-controller="Moderation"
+                  asp-action="UpdatePromptCategory"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="categoryId"
+                           class="form-label">
+                        Раздел каталога
+                    </label>
+
+                    <select id="categoryId"
+                            name="categoryId"
+                            class="form-select"
+                            required>
+
+                        @foreach (var category in Model.CategoryOptions)
+                        {
+                            if (category.Selected)
+                            {
+                                <option value="@category.Value"
+                                        selected>
+                                    @category.Text
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@category.Value">
+                                    @category.Text
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-outline-primary btn-sm w-100">
+                    Сохранить категорию
+                </button>
+            </form>
+        </section>
+
+        <section class="moderation-sidebar-note moderation-editorial-editor">
+            <h2>
+                Редакционная правка
+            </h2>
+
+            <p class="moderation-editorial-description">
+                Можно исправить название, краткое описание
+                и сложность без возврата промпта автору.
+            </p>
+
+            <form asp-controller="Moderation"
+                  asp-action="UpdatePromptEditorialData"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="editorialTitle"
+                           class="form-label">
+                        Название
+                    </label>
+
+                    <input id="editorialTitle"
+                           name="title"
+                           class="form-control"
+                           value="@Model.Title"
+                           maxlength="160"
+                           required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="editorialSummary"
+                           class="form-label">
+                        Краткое описание
+                    </label>
+
+                    <textarea id="editorialSummary"
+                              name="summary"
+                              class="form-control"
+                              maxlength="500"
+                              rows="5"
+                              required>@Model.Summary</textarea>
+
+                    <div class="form-text">
+                        От 10 до 500 символов.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="editorialDifficulty"
+                           class="form-label">
+                        Сложность
+                    </label>
+
+                    <select id="editorialDifficulty"
+                            name="difficulty"
+                            class="form-select"
+                            required>
+
+                        @foreach (var difficulty in Model.DifficultyOptions)
+                        {
+                            if (difficulty.Selected)
+                            {
+                                <option value="@difficulty.Value"
+                                        selected>
+                                    @difficulty.Text
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@difficulty.Value">
+                                    @difficulty.Text
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-outline-primary btn-sm w-100">
+                    Сохранить правки
+                </button>
+            </form>
+
+            <div class="moderation-editorial-note">
+                Slug не меняется автоматически.
+            </div>
+        </section>
+
+        <section class="moderation-decision-card approve">
+            <h2>
+                Опубликовать
+            </h2>
+
+            <p>
+                Промпт сразу появится в общем каталоге
+                и станет доступен всем посетителям.
+            </p>
+
+            <form asp-controller="Moderation"
+                  asp-action="Approve"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit"
+                        class="btn btn-success"
+                        onclick="return confirm('Опубликовать этот промпт?');">
+                    Одобрить и опубликовать
+                </button>
+            </form>
+        </section>
+
+        <section class="moderation-decision-card reject">
+            <h2>
+                Вернуть на исправление
+            </h2>
+
+            <p>
+                Напишите конкретно, что автору необходимо
+                изменить перед повторной отправкой.
+            </p>
+
+            <form asp-controller="Moderation"
+                  asp-action="Reject"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="moderationComment"
+                           class="form-label">
+                        Комментарий автору
+                    </label>
+
+                    <textarea id="moderationComment"
+                              name="moderationComment"
+                              class="form-control moderation-reject-textarea"
+                              maxlength="1000"
+                              rows="6"
+                              placeholder="Например: уточните формат результата и добавьте более конкретный готовый промпт."
+                              required></textarea>
+
+                    <div class="form-text">
+                        Минимум 5 символов.
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-outline-danger"
+                        onclick="return confirm('Отклонить промпт и вернуть его автору?');">
+                    Отклонить промпт
+                </button>
+            </form>
+        </section>
+    </aside>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/moderation-review.js"
+            asp-append-version="true">
+    </script>
+}

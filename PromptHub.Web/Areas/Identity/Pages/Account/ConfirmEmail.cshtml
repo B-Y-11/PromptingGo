@@ -1,0 +1,60 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.ConfirmEmailModel
+
+@{
+    ViewData["Title"] =
+        Model.Succeeded
+            ? "Email подтверждён"
+            : "Не удалось подтвердить email";
+
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+            <div class="identity-kicker">
+                Проверка аккаунта
+            </div>
+
+            <h1 class="identity-title">
+                @(Model.Succeeded
+                    ? "Email подтверждён"
+                    : "Ссылка недействительна")
+            </h1>
+
+            <div class="alert @(Model.Succeeded
+                                                  ? "alert-success"
+                                                  : "alert-danger")">
+                @Model.StatusMessage
+            </div>
+
+            @if (Model.Succeeded)
+            {
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-area="Identity"
+                       asp-page="/Account/Manage/SignInMethods"
+                       class="btn btn-primary identity-submit-button">
+                        Вернуться в настройки
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="./Login"
+                       asp-route-returnUrl="@Model.ReturnUrl"
+                       class="btn btn-primary identity-submit-button">
+                        Войти
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-page="./ResendEmailConfirmation"
+                   class="btn btn-primary identity-submit-button">
+                    Получить новую ссылку
+                </a>
+            }
+        </main>
+    </div>
+</section>

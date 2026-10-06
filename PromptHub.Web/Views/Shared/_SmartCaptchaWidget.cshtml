@@ -1,0 +1,27 @@
+@using Microsoft.Extensions.Options
+@using PromptHub.Web.Services.Security
+@inject IOptions<SmartCaptchaOptions> SmartCaptchaOptionsAccessor
+
+@{
+    var smartCaptcha =
+        SmartCaptchaOptionsAccessor.Value;
+}
+
+@if (smartCaptcha.Enabled)
+{
+    <div class="identity-captcha">
+        <div class="smart-captcha"
+             data-sitekey="@smartCaptcha.ClientKey">
+        </div>
+
+        <noscript>
+            <div class="alert alert-warning mt-2 mb-0">
+                Для защиты формы от автоматических запросов
+                включите JavaScript и обновите страницу.
+            </div>
+        </noscript>
+    </div>
+
+    <script src="https://smartcaptcha.cloud.yandex.ru/captcha.js"
+            defer></script>
+}

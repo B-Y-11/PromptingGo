@@ -1,0 +1,207 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.ArchivedPromptsViewModel
+
+@{
+    ViewData["Title"] = "Скрытые промпты";
+}
+
+<section>
+    <header class="moderation-page-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Архив модерации
+            </div>
+
+            <h1 class="moderation-page-title">
+                Скрытые промпты
+            </h1>
+
+            <p class="moderation-page-description">
+                Здесь находятся опубликованные материалы,
+                которые были скрыты модератором после проверки жалобы.
+                При ошибочном решении промпт можно восстановить.
+            </p>
+
+            <div class="moderation-report-links">
+
+                <a asp-controller="Moderation"
+                   asp-action="Dashboard"
+                   class="btn btn-outline-primary btn-sm">
+                    Панель модерации
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="Reports"
+                   class="btn btn-outline-primary btn-sm">
+                    Жалобы пользователей
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    Очередь промптов
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Prompts.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                скрытых промптов
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Prompts.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Скрытых промптов нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                Сейчас нет публикаций,
+                скрытых модераторами.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="moderation-queue-list">
+            @foreach (var prompt in Model.Prompts)
+            {
+                <article class="moderation-queue-card archived-prompt-card">
+                    <div class="moderation-queue-layout">
+                        <div>
+                            <div class="moderation-queue-tags">
+                                <span class="notebook-tag notebook-tag-purple">
+                                    Скрыт
+                                </span>
+
+                                <span class="notebook-tag">
+                                    @prompt.CategoryName
+                                </span>
+                            </div>
+
+                            <h2 class="moderation-queue-title">
+                                @prompt.Title
+                            </h2>
+
+                            <p class="moderation-queue-summary">
+                                @prompt.Summary
+                            </p>
+
+                            <div class="archive-reason-box">
+                                <div class="archive-reason-title">
+                                    Причина скрытия
+                                </div>
+
+                                @if (string.IsNullOrWhiteSpace(
+                                    prompt.ArchiveReason))
+                                {
+                                    <span class="text-muted">
+                                        Причина не указана.
+                                    </span>
+                                }
+                                else
+                                {
+                                    @prompt.ArchiveReason
+                                }
+                            </div>
+
+                            <div class="moderation-queue-meta">
+                                <span>
+                                    Автор:
+                                    @prompt.AuthorName
+                                </span>
+
+                                <span>
+                                    Скрыто модератором:
+                                    @prompt.ArchivedByName
+                                </span>
+
+                                @if (prompt.ArchivedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        Дата скрытия:
+
+                                        <time datetime="@prompt.ArchivedAtUtc.ToUtcIsoString()"
+                                              data-local-datetime>
+                                            @prompt.ArchivedAtUtc.Value
+                                            .ToString("dd.MM.yyyy HH:mm")
+                                        </time>
+                                    </span>
+                                }
+
+                                @if (prompt.PublishedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        Был опубликован:
+
+                                        <time datetime="@prompt.PublishedAtUtc.ToUtcIsoString()"
+                                              data-local-date>
+                                            @prompt.PublishedAtUtc.Value
+                                            .ToString("dd.MM.yyyy")
+                                        </time>
+                                    </span>
+                                }
+
+                                <span>
+                                    Просмотры:
+                                    @prompt.ViewCount
+                                </span>
+
+                                <span>
+                                    Копирования:
+                                    @prompt.CopyCount
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <form asp-controller="Moderation"
+                                  asp-action="RestoreArchivedPrompt"
+                                  asp-route-id="@prompt.Id"
+                                  method="post"
+                                  class="restore-prompt-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <textarea name="restoreComment"
+                                          class="form-control report-resolution-input"
+                                          maxlength="1000"
+                                          rows="3"
+                                          placeholder="Комментарий к восстановлению, необязательно"></textarea>
+
+                                <button type="submit"
+                                        class="btn btn-success btn-sm w-100 mt-2"
+                                        onclick="return confirm('Восстановить промпт и вернуть его в каталог?');">
+                                    Восстановить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

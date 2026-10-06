@@ -1,0 +1,220 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.PromptReportsViewModel
+
+@{
+    ViewData["Title"] = "Жалобы";
+}
+
+<section>
+    <header class="moderation-page-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Сигналы пользователей
+            </div>
+
+            <h1 class="moderation-page-title">
+                Жалобы на промпты
+            </h1>
+
+            <p class="moderation-page-description">
+                Проверьте обращения пользователей.
+                После просмотра отметьте жалобу обработанной
+                или отклоните её.
+            </p>
+
+            <div class="moderation-report-links">
+
+                <a asp-controller="Moderation"
+                   asp-action="Dashboard"
+                   class="btn btn-outline-primary btn-sm">
+                    Панель модерации
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    Очередь промптов
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="ArchivedPrompts"
+                   class="btn btn-outline-primary btn-sm">
+                    Скрытые промпты
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Reports.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                новых жалоб
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Reports.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Новых жалоб нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                Сейчас нет обращений, ожидающих проверки.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="moderation-queue-list">
+            @foreach (var report in Model.Reports)
+            {
+                <article class="moderation-queue-card report-card">
+                    <div class="moderation-queue-layout">
+                        <div>
+                            <div class="moderation-queue-tags">
+                                <span class="notebook-tag notebook-tag-purple">
+                                    Жалоба
+                                </span>
+
+                                <span class="notebook-tag">
+                                    @report.CategoryName
+                                </span>
+
+                                <span class="notebook-tag notebook-tag-blue">
+                                    @report.ReasonName
+                                </span>
+                            </div>
+
+                            <h2 class="moderation-queue-title">
+                                @report.PromptTitle
+                            </h2>
+
+                            <p class="moderation-queue-summary">
+                                @report.PromptSummary
+                            </p>
+
+                            <div class="report-details-box">
+                                @if (string.IsNullOrWhiteSpace(
+                                    report.Details))
+                                {
+                                    <span class="text-muted">
+                                        Пользователь не добавил комментарий.
+                                    </span>
+                                }
+                                else
+                                {
+                                    @report.Details
+                                }
+                            </div>
+
+                            <div class="moderation-queue-meta">
+                                <span>
+                                    Отправил:
+                                    @report.ReporterName
+                                </span>
+
+                                <span>
+                                    Дата:
+
+                                    <time datetime="@report.CreatedAtUtc.ToUtcIsoString()"
+                                          data-local-datetime>
+                                        @report.CreatedAtUtc
+                                        .ToString("dd.MM.yyyy HH:mm")
+                                    </time>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <a asp-controller="Prompts"
+                               asp-action="Details"
+                               asp-route-slug="@report.PromptSlug"
+                               class="btn btn-outline-primary btn-sm"
+                               target="_blank">
+                                Открыть промпт
+                            </a>
+
+
+                            <form asp-controller="Moderation"
+                                  asp-action="ArchiveReportedPrompt"
+                                  asp-route-id="@report.Id"
+                                  method="post"
+                                  class="report-archive-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <textarea name="archiveReason"
+                                          class="form-control report-resolution-input"
+                                          maxlength="1000"
+                                          rows="3"
+                                          placeholder="Причина скрытия промпта"
+                                          required></textarea>
+
+                                <button type="submit"
+                                        class="btn btn-danger btn-sm w-100 mt-2"
+                                        onclick="return confirm('Скрыть промпт из каталога? Это действие уберёт публикацию из публичных разделов.');">
+                                    Скрыть промпт
+                                </button>
+                            </form>
+
+
+                            <form asp-controller="Moderation"
+                                  asp-action="ResolveReport"
+                                  asp-route-id="@report.Id"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <textarea name="resolutionComment"
+                                          class="form-control report-resolution-input"
+                                          maxlength="1000"
+                                          rows="3"
+                                          placeholder="Комментарий модератора, необязательно"></textarea>
+
+                                <button type="submit"
+                                        class="btn btn-success btn-sm w-100 mt-2"
+                                        onclick="return confirm('Отметить жалобу обработанной?');">
+                                    Обработано
+                                </button>
+                            </form>
+
+                            <form asp-controller="Moderation"
+                                  asp-action="DismissReport"
+                                  asp-route-id="@report.Id"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Отклонить жалобу?');">
+                                    Отклонить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

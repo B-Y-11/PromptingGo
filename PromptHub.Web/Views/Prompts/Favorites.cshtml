@@ -1,0 +1,280 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Prompts.FavoritePromptsViewModel
+
+@{
+    ViewData["Title"] = "Избранное";
+}
+
+<section>
+    <header class="notebook-page-heading">
+        <div>
+            <div class="notebook-page-kicker">
+                Личный лист · Избранное
+            </div>
+
+            <h1>
+                Сохранённые промпты
+            </h1>
+
+            <p class="text-muted mb-0">
+                Промпты, к которым вы хотите
+                вернуться позднее.
+            </p>
+        </div>
+
+        <div class="catalog-result-count">
+            Сохранено:
+            <span data-favorites-count>
+                @Model.Prompts.Count
+            </span>
+        </div>
+    </header>
+
+    <div class="notebook-empty-state
+        @(Model.Prompts.Count > 0
+             ? "d-none"
+             : string.Empty)"
+         data-favorites-empty>
+
+        <h2>
+            В избранном пока пусто
+        </h2>
+
+        <p class="text-muted">
+            Откройте каталог и сохраните промпты,
+            которые могут пригодиться позднее.
+        </p>
+
+        <a asp-controller="Prompts"
+           asp-action="Index"
+           class="btn btn-primary">
+            Перейти в каталог
+        </a>
+    </div>
+
+    <div class="prompt-notes-grid
+        @(Model.Prompts.Count == 0
+             ? "d-none"
+             : string.Empty)"
+         data-favorites-grid>
+
+        @foreach (var prompt in Model.Prompts)
+        {
+            var coverImageUrl =
+                prompt.Cover is null
+                    ? null
+                    : Url.RouteUrl(
+                        "PromptMediaThumbnail",
+                        new
+                        {
+                            id = prompt.Cover.MediaId
+                        });
+
+            var coverAltText =
+                prompt.Cover is null ||
+                string.IsNullOrWhiteSpace(
+                    prompt.Cover.AltText)
+                    ? $"Обложка промпта «{prompt.Title}»"
+                    : prompt.Cover.AltText;
+            <article class="prompt-note-card"
+                     data-favorite-card>
+
+                <div class="prompt-note-tape">
+                </div>
+                @* -------------------------------------------------------------------------
+                   EN: Published prompt cover or visual fallback
+                   RU: Опубликованная обложка или визуальная заглушка
+                   ------------------------------------------------------------------------- *@
+
+                <a asp-controller="Prompts"
+                   asp-action="Details"
+                   asp-route-slug="@prompt.Slug"
+                   class="prompt-card-cover
+                    @(prompt.Cover is null
+                      ? "is-placeholder"
+                      : string.Empty)"
+                   aria-label="Открыть промпт «@prompt.Title»">
+
+                    @if (coverImageUrl is not null)
+                    {
+                        <img src="@coverImageUrl"
+                             alt="@coverAltText"
+                             class="prompt-card-cover-image"
+                             loading="lazy"
+                             decoding="async" />
+                    }
+                    else
+                    {
+                        <span class="prompt-card-cover-placeholder">
+                            <span class="prompt-card-cover-placeholder-mark"
+                                  aria-hidden="true">
+                                PH
+                            </span>
+
+                            <span class="prompt-card-cover-placeholder-category">
+                                @prompt.CategoryName
+                            </span>
+
+                            <span class="prompt-card-cover-placeholder-text">
+                                Пример результата пока не добавлен
+                            </span>
+                        </span>
+                    }
+                </a>
+
+                <div class="prompt-card-badge-zone">
+                    <div class="prompt-note-tags">
+                        <span class="notebook-tag notebook-tag-purple">
+                            @prompt.CategoryName
+                        </span>
+
+                        <span class="notebook-tag">
+                            @prompt.DifficultyName
+                        </span>
+
+                        @if (prompt.HasConstructor)
+                        {
+                            <span class="notebook-tag notebook-tag-blue">
+                                Есть настройка
+                            </span>
+                        }
+                    </div>
+
+                    @if (prompt.Tags.Count > 0)
+                    {
+                        <div class="prompt-note-extra-tags">
+                            @foreach (var tag in prompt.Tags)
+                            {
+                                <span class="prompt-tag-badge">
+                                    #@tag.Name
+                                </span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="prompt-note-extra-tags prompt-note-extra-tags-empty">
+                        </div>
+                    }
+                </div>
+
+                <h2 class="prompt-note-title">
+                    <a asp-controller="Prompts"
+                       asp-action="Details"
+                       asp-route-slug="@prompt.Slug">
+                        @prompt.Title
+                    </a>
+                </h2>
+
+                <p class="prompt-note-summary">
+                    @prompt.Summary
+                </p>
+
+                <div class="prompt-note-author">
+                    Автор:
+
+                    <a asp-controller="Authors"
+                       asp-action="Details"
+                       asp-route-id="@prompt.AuthorId"
+                       class="notebook-inline-link">
+                        @prompt.AuthorName
+                    </a>
+
+                    @if (prompt.PublishedAtUtc.HasValue)
+                    {
+                        <span>
+                            ·
+
+                            <time datetime="@prompt.PublishedAtUtc.ToUtcIsoString()"
+                                  data-local-date>
+                                @prompt.PublishedAtUtc.Value
+                                .ToString("dd.MM.yyyy")
+                            </time>
+                        </span>
+                    }
+                </div>
+
+                <div class="prompt-note-rating">
+                    <span>
+                        ★
+                    </span>
+
+                    @if (prompt.RatingCount > 0)
+                    {
+                        <span>
+                            @prompt.AverageRating.ToString("0.0")
+                            · голосов: @prompt.RatingCount
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            оценок пока нет
+                        </span>
+                    }
+
+                    @if (prompt.CurrentUserRating.HasValue)
+                    {
+                        <span class="prompt-note-user-rating">
+                            ваша: @prompt.CurrentUserRating
+                        </span>
+                    }
+                </div>
+
+                <footer class="prompt-note-footer">
+                    <div class="prompt-note-stats">
+                        <div>
+                            Просмотры:
+                            @prompt.ViewCount
+                        </div>
+
+                        <div>
+                            Копирования:
+                            @prompt.CopyCount
+                        </div>
+
+                        <div>
+                            Комментарии:
+                            @prompt.VisibleCommentCount
+                        </div>
+                    </div>
+
+                    <div class="prompt-note-actions">
+                        <form action="@Url.Action(
+                                                                                            "ToggleFavorite",
+                                                                                            "Prompts",
+                                                                                            new
+                                                                                            {
+                                                                                                slug = prompt.Slug
+                                                                                            })"
+                              method="post"
+                              class="favorite-toggle-form"
+                              data-remove-card="true">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn
+                                btn-primary
+                                btn-sm
+                                favorite-toggle-button
+                                is-favorite"
+                                    aria-pressed="true"
+                                    data-add-label="В избранное"
+                                    data-remove-label="В избранном">
+                                Убрать
+                            </button>
+                        </form>
+
+                        <a asp-controller="Prompts"
+                           asp-action="Details"
+                           asp-route-slug="@prompt.Slug"
+                           class="prompt-note-open">
+                            Открыть →
+                        </a>
+                    </div>
+                </footer>
+            </article>
+        }
+    </div>
+</section>

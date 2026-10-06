@@ -1,0 +1,1915 @@
+﻿@using PromptHub.Web.Models.Enums
+@using PromptHub.Web.Security
+@model PromptHub.Web.Models.ViewModels.Prompts.PromptDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+
+    if (Model.IsPreview)
+{
+    ViewData["Robots"] =
+        "noindex,follow";
+}
+else
+{
+    ViewData["MetaDescription"] =
+        Model.Summary;
+
+    ViewData["Robots"] =
+        "index,follow";
+
+    ViewData["CanonicalUrl"] =
+        Url.Action(
+            "Details",
+            "Prompts",
+            new
+            {
+                slug =
+                    Model.Slug
+            },
+            protocol:
+                Context.Request.Scheme,
+            host:
+                Context.Request.Host.Value);
+
+    ViewData["OgType"] =
+        "article";
+
+        var homeUrl =
+    Url.Action(
+        "Index",
+        "Home",
+        values: null,
+        protocol:
+            Context.Request.Scheme,
+        host:
+            Context.Request.Host.Value);
+
+var catalogUrl =
+    Url.RouteUrl(
+        "PromptsCatalog",
+        values: null,
+        protocol:
+            Context.Request.Scheme,
+        host:
+            Context.Request.Host.Value);
+
+var categoryUrl =
+    Url.RouteUrl(
+        "PromptsCategory",
+        new
+        {
+            category =
+                Model.CategorySlug
+        },
+        protocol:
+            Context.Request.Scheme,
+        host:
+            Context.Request.Host.Value);
+
+var socialMedia =
+    Model.MediaItems
+        .FirstOrDefault(media =>
+            media.IsCover)
+    ?? Model.MediaItems
+        .FirstOrDefault();
+
+if (socialMedia is not null)
+{
+    var socialImageUrl =
+        Url.RouteUrl(
+            "PromptMediaContent",
+            new
+            {
+                id =
+                    socialMedia.Id
+            },
+            protocol:
+                Context.Request.Scheme,
+            host:
+                Context.Request.Host.Value);
+
+    if (!string.IsNullOrWhiteSpace(
+            socialImageUrl))
+    {
+        ViewData["SocialImageUrl"] =
+            socialImageUrl;
+
+        ViewData["SocialImageAlt"] =
+            string.IsNullOrWhiteSpace(
+                socialMedia.AltText)
+                ? $"Обложка промпта «{Model.Title}»"
+                : socialMedia.AltText;
+    }
+}
+
+var promptUrl =
+    ViewData["CanonicalUrl"]
+        ?.ToString();
+
+var authorUrl =
+    Url.Action(
+        "Details",
+        "Authors",
+        new
+        {
+            id =
+                Model.AuthorId
+        },
+        protocol:
+            Context.Request.Scheme,
+        host:
+            Context.Request.Host.Value);
+
+var breadcrumbs =
+    new Dictionary<string, object?>
+    {
+        ["@type"] =
+            "BreadcrumbList",
+
+        ["itemListElement"] =
+            new object[]
+            {
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        1,
+
+                    ["name"] =
+                        "Главная",
+
+                    ["item"] =
+                        homeUrl
+                },
+
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        2,
+
+                    ["name"] =
+                        "Каталог промптов",
+
+                    ["item"] =
+                        catalogUrl
+                },
+
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        3,
+
+                    ["name"] =
+                        Model.CategoryName,
+
+                    ["item"] =
+                        categoryUrl
+                },
+
+                new Dictionary<string, object?>
+                {
+                    ["@type"] =
+                        "ListItem",
+
+                    ["position"] =
+                        4,
+
+                    ["name"] =
+                        Model.Title,
+
+                    ["item"] =
+                        promptUrl
+                }
+            }
+    };
+
+var promptCreativeWork =
+    new Dictionary<string, object?>
+    {
+        ["@type"] =
+            "CreativeWork",
+
+        ["@id"] =
+            $"{promptUrl}#prompt",
+
+        ["name"] =
+            Model.Title,
+
+        ["description"] =
+            Model.Summary,
+
+        ["url"] =
+            promptUrl,
+
+        ["inLanguage"] =
+            Model.LanguageCode,
+
+        ["version"] =
+            Model.VersionNumber.ToString(),
+
+        ["genre"] =
+            Model.CategoryName,
+
+        ["author"] =
+            new Dictionary<string, object?>
+            {
+                ["@type"] =
+                    "Person",
+
+                ["name"] =
+                    Model.AuthorName,
+
+                ["url"] =
+                    authorUrl
+            }
+    };
+
+if (Model.Tags.Count > 0)
+{
+    promptCreativeWork["keywords"] =
+        Model.Tags
+            .Select(tag =>
+                tag.Name)
+            .ToArray();
+}
+
+var itemPage =
+    new Dictionary<string, object?>
+    {
+        ["@type"] =
+            "ItemPage",
+
+        ["@id"] =
+            $"{promptUrl}#webpage",
+
+        ["url"] =
+            promptUrl,
+
+        ["name"] =
+            Model.Title,
+
+        ["description"] =
+            Model.Summary,
+
+        ["mainEntity"] =
+            new Dictionary<string, object?>
+            {
+                ["@id"] =
+                    $"{promptUrl}#prompt"
+            },
+
+        ["breadcrumb"] =
+            new Dictionary<string, object?>
+            {
+                ["@id"] =
+                    $"{promptUrl}#breadcrumb"
+            }
+    };
+
+breadcrumbs["@id"] =
+    $"{promptUrl}#breadcrumb";
+
+var jsonLd =
+    new Dictionary<string, object?>
+    {
+        ["@context"] =
+            "https://schema.org",
+
+        ["@graph"] =
+            new object[]
+            {
+                itemPage,
+                promptCreativeWork,
+                breadcrumbs
+            }
+    };
+
+ViewData["JsonLd"] =
+    JsonSerializer.Serialize(
+        jsonLd);
+}
+
+    var renderUrl = Model.IsPreview
+        ? Url.Action(
+            "RenderPreview",
+            "Prompts",
+            new
+            {
+                id = Model.PromptId
+            })
+        : Url.Action(
+            "Render",
+            "Prompts",
+            new
+            {
+                slug = Model.Slug
+            });
+
+    var exampleNumber =
+        Model.HasConstructor ? 4 : 2;
+}
+
+@if (Model.IsPreview)
+{
+    <section class="notebook-preview-banner">
+        <div class="d-flex
+            flex-wrap
+            justify-content-between
+            align-items-center
+            gap-3">
+
+            <div>
+                <div class="fw-semibold">
+                    Режим предпросмотра
+                </div>
+
+                <div class="text-muted">
+                    Страница доступна только вам.
+                    В общем каталоге промпта пока нет.
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Prompts"
+                   asp-action="My"
+                   class="btn btn-outline-secondary btn-sm">
+                    Мои промпты
+                </a>
+
+                @if (Model.CanEdit)
+                {
+                    <a asp-controller="Prompts"
+                       asp-action="Edit"
+                       asp-route-id="@Model.PromptId"
+                       class="btn btn-outline-primary btn-sm">
+                        Редактировать
+                    </a>
+                }
+
+                @if (Model.CanSubmitForModeration)
+                {
+                    <form asp-controller="Prompts"
+                          asp-action="SubmitForModeration"
+                          asp-route-id="@Model.PromptId"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-primary btn-sm"
+                                onclick="return confirm('Отправить промпт на модерацию?');">
+                            Отправить на модерацию
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+
+@if (TempData["SuccessMessage"]
+    is string successMessage)
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+@if (TempData["ErrorMessage"]
+    is string errorMessage)
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@if (!Model.IsPreview &&
+    Model.CanUnpublish)
+{
+    <div class="d-flex
+                justify-content-end
+                mb-3">
+
+        <form asp-controller="Prompts"
+              asp-action="Unpublish"
+              asp-route-id="@Model.PromptId"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <button type="submit"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('Снять промпт с публикации? Он будет возвращён в черновики и исчезнет из публичного каталога.');">
+                Снять с публикации
+            </button>
+        </form>
+    </div>
+}
+
+@if (!Model.IsPreview &&
+    (User.IsInRole(
+        ApplicationRoles.Moderator) ||
+     User.IsInRole(
+        ApplicationRoles.Administrator)))
+{
+    <section class="alert alert-warning mb-4">
+        <div class="fw-semibold mb-2">
+            Управление модерацией
+        </div>
+
+        <div class="text-muted mb-3">
+            Вы можете скрыть этот промпт независимо
+            от наличия пользовательских жалоб.
+        </div>
+
+        <form asp-controller="Moderation"
+              asp-action="ArchivePrompt"
+              asp-route-id="@Model.PromptId"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div class="mb-2">
+                <label for="archiveReason"
+                       class="form-label">
+                    Причина скрытия
+                </label>
+
+                <textarea id="archiveReason"
+                          name="archiveReason"
+                          class="form-control"
+                          minlength="5"
+                          maxlength="1000"
+                          rows="3"
+                          required
+                          placeholder="Укажите причину скрытия промпта"></textarea>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-danger btn-sm"
+                    onclick="return confirm('Скрыть этот промпт из публичного каталога?');">
+                Скрыть промпт
+            </button>
+        </form>
+    </section>
+}
+
+<header class="prompt-detail-header">
+    <a asp-route="PromptsCategory"
+   asp-route-category="@Model.CategorySlug"
+   class="prompt-detail-category text-decoration-none">
+    @Model.CategoryName
+</a>
+
+    <h1 class="prompt-detail-title">
+        @Model.Title
+    </h1>
+
+    <p class="prompt-detail-summary">
+        @Model.Summary
+    </p>
+
+    <div class="prompt-detail-meta">
+        <span class="prompt-meta-note">
+            Автор:
+
+            <a asp-controller="Authors"
+               asp-action="Details"
+               asp-route-id="@Model.AuthorId"
+               class="notebook-inline-link">
+                @Model.AuthorName
+            </a>
+        </span>
+
+        <a asp-controller="Prompts"
+   asp-action="Index"
+   asp-route-difficulty="@Model.DifficultyValue"
+   class="prompt-meta-note text-decoration-none">
+    @Model.DifficultyName
+</a>
+
+        <span class="prompt-meta-note">
+            Язык: @Model.LanguageCode
+        </span>
+        @*
+        <span class="prompt-meta-note">
+            Версия: @Model.VersionNumber
+        </span>
+        *@
+        <span class="prompt-meta-note">
+            Просмотры: @Model.ViewCount
+        </span>
+
+        <span id="copyCountBadge"
+              class="prompt-meta-note">
+            Копирования: @Model.CopyCount
+        </span>
+
+        @if (Model.HasConstructor)
+        {
+            <span class="prompt-meta-note">
+                Есть настройка
+            </span>
+        }
+    </div>
+
+    @if (Model.Tags.Count > 0)
+    {
+        <div class="prompt-detail-tags-block">
+            <div class="prompt-detail-tags-label">
+                Теги промпта
+            </div>
+
+            <div class="prompt-detail-tags">
+                @foreach (var tag in Model.Tags)
+{
+    <a asp-route="PromptsTag"
+   asp-route-tag="@tag.Slug"
+   class="prompt-tag-badge
+          prompt-detail-tag
+          text-decoration-none">
+    #@tag.Name
+</a>
+}
+            </div>
+        </div>
+    }
+
+    @if (!Model.IsPreview)
+    {
+        <div class="prompt-detail-favorite-row">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form action="@Url.Action(
+                                                                  "ToggleFavorite",
+                                                                  "Prompts",
+                                                                  new
+                                                                  {
+                                                                      slug = Model.Slug
+                                                                  })"
+                      method="post"
+                      class="favorite-toggle-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn
+                        favorite-toggle-button
+                        @(Model.IsFavorite
+                                    ? "btn-primary is-favorite"
+                                    : "btn-outline-primary")"
+                            aria-pressed="@Model.IsFavorite.ToString().ToLowerInvariant()"
+                            data-add-label="Добавить в избранное"
+                            data-remove-label="В избранном">
+                        @(Model.IsFavorite
+                            ? "В избранном"
+                            : "Добавить в избранное")
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")"
+                   class="btn btn-outline-primary">
+                    Войти, чтобы сохранить
+                </a>
+            }
+        </div>
+    }
+
+
+    @if (!Model.IsPreview)
+    {
+        <section class="prompt-rating-panel"
+                 data-rating-panel>
+
+            <div class="prompt-rating-summary">
+                <div>
+                    <div class="prompt-rating-label">
+                        Средняя оценка
+                    </div>
+
+                    <div class="prompt-rating-value">
+                        <span data-rating-average>
+                            @(Model.RatingCount > 0
+                                ? Model.AverageRating.ToString("0.0")
+                                : "—")
+                        </span>
+                        <span class="prompt-rating-max">
+                            / 5
+                        </span>
+                    </div>
+                </div>
+
+                <div class="prompt-rating-count">
+                    Голосов:
+                    <span data-rating-count>
+                        @Model.RatingCount
+                    </span>
+                </div>
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form action="@Url.Action(
+                                                                  "SetRating",
+                                                                  "Prompts",
+                                                                  new
+                                                                  {
+                                                                      slug = Model.Slug
+                                                                  })"
+                      data-clear-action="@Url.Action(
+                                                                  "ClearRating",
+                                                                  "Prompts",
+                                                                  new
+                                                                  {
+                                                                      slug = Model.Slug
+                                                                  })"
+                      method="post"
+                      class="prompt-rating-form">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="prompt-rating-stars"
+                         role="group"
+                         aria-label="Оценка промпта">
+
+                        @for (var score = 1; score <= 5; score++)
+                        {
+                            var isActive =
+                                Model.CurrentUserRating.HasValue &&
+                                score <= Model.CurrentUserRating.Value;
+
+                            <button type="submit"
+                                    class="prompt-rating-star @(isActive ? "active" : string.Empty)"
+                                    data-score="@score"
+                                    aria-pressed="@(Model.CurrentUserRating == score)">
+                                ★
+                            </button>
+                        }
+                    </div>
+
+                    <div class="prompt-rating-footer">
+                        <span data-user-rating>
+                            @(Model.CurrentUserRating.HasValue
+                                ? $"Ваша оценка: {Model.CurrentUserRating}"
+                                : "Вы ещё не оценивали")
+                        </span>
+
+                        <button type="button"
+                                class="prompt-rating-clear">
+                            Убрать оценку
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")"
+                   class="btn btn-outline-primary">
+                    Войти, чтобы оценить
+                </a>
+            }
+        </section>
+    }
+
+</header>
+
+
+
+@if (!Model.IsPreview)
+{
+    <form id="copyMetricForm"
+          asp-controller="Prompts"
+          asp-action="RegisterCopy"
+          asp-route-slug="@Model.Slug"
+          method="post"
+          class="d-none">
+
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+<div class="prompt-detail-layout">
+    <main class="prompt-detail-main">
+        <section class="prompt-paper-section ready-sheet">
+            <div class="prompt-section-header">
+                <h2 class="prompt-section-heading">
+                    <span class="prompt-section-number">
+                        1
+                    </span>
+
+                    Готовый промпт
+                </h2>
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.ReadyText))
+                {
+                    <button type="button"
+                            class="btn
+                        btn-primary
+                        btn-sm
+                        prompt-copy-button
+                        copy-prompt-button"
+                            data-copy-target="readyPrompt">
+                        Скопировать
+                    </button>
+                }
+            </div>
+
+            @if (string.IsNullOrWhiteSpace(
+                Model.ReadyText))
+            {
+                <div class="alert alert-warning mb-0">
+                    Готовый вариант пока не добавлен.
+                </div>
+            }
+            else
+            {
+                <pre id="readyPrompt"
+                     class="notebook-prompt-text">@Model.ReadyText</pre>
+                    <div class="prompt-usage-inline">
+    <div class="prompt-usage-inline-title">
+        Как использовать
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(
+        Model.UsageInstructions))
+    {
+        <div class="prompt-usage-inline-text text-muted">
+            Скопируйте готовый текст и вставьте его
+            в выбранную нейросеть.
+        </div>
+    }
+    else
+    {
+        <div class="prompt-usage-inline-text">
+            @Model.UsageInstructions
+        </div>
+    }
+</div>
+            }
+        </section>
+
+        @if (Model.HasConstructor)
+        {
+            <section id="constructor"
+         class="prompt-paper-section constructor-sheet">
+                <div class="prompt-section-header">
+                    <h2 class="prompt-section-heading">
+                        <span class="prompt-section-number">
+                            2
+                        </span>
+
+                        Настроить под себя
+                    </h2>
+                </div>
+
+                <p class="constructor-intro">
+                    Заполните понятные поля ниже.
+                    Сервис автоматически соберёт новую версию
+                    промпта под вашу задачу.
+                </p>
+
+                <form action="@renderUrl"
+      method="post"
+      data-prompt-constructor-form>
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="constructor-fields">
+                        @foreach (var variable in Model.Variables)
+                        {
+                            var fieldId =
+                                $"variable-{variable.Key}";
+
+                            Model.Values.TryGetValue(
+                                variable.Key,
+                                out var currentValue);
+
+                            var fieldErrors = Model.Errors
+                                .Where(error =>
+                                    string.Equals(
+                                        error.VariableKey,
+                                        variable.Key,
+                                        StringComparison.OrdinalIgnoreCase))
+                                .ToArray();
+
+                            <div class="constructor-field">
+                                <label for="@fieldId"
+                                       class="form-label">
+
+                                    @variable.Label
+
+                                    @if (variable.IsRequired)
+                                    {
+                                        <span class="constructor-field-required">
+                                            *
+                                        </span>
+                                    }
+                                </label>
+
+                                @switch (variable.VariableType)
+                                {
+                                    case PromptVariableType.TextArea:
+                                        <textarea id="@fieldId"
+                                                  name="Values[@variable.Key]"
+                                                  class="form-control"
+                                                  rows="5"
+                                                  placeholder="@variable.Placeholder"
+                                                  required="@(variable.IsRequired
+                                                                                                                                                          ? "required"
+                                                                                                                                                          : null)">@currentValue</textarea>
+                                        break;
+
+                                    case PromptVariableType.Number:
+                                        <input id="@fieldId"
+                                               name="Values[@variable.Key]"
+                                               type="number"
+                                               value="@currentValue"
+                                               class="form-control"
+                                               placeholder="@variable.Placeholder"
+                                               required="@(variable.IsRequired
+                                                                                                                                                 ? "required"
+                                                                                                                                                 : null)" />
+                                        break;
+
+                                    case PromptVariableType.Select:
+                                        <select id="@fieldId"
+                                                name="Values[@variable.Key]"
+                                                class="form-select"
+                                                required="@(variable.IsRequired
+                                                                                                                                                    ? "required"
+                                                                                                                                                    : null)">
+
+                                            <option value="">
+                                                Выберите значение
+                                            </option>
+
+                                            @foreach (var option in variable.Options)
+                                            {
+                                                if (string.Equals(
+                                                    currentValue,
+                                                    option.Value,
+                                                    StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    <option value="@option.Value"
+                                                            selected>
+                                                        @option.Label
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@option.Value">
+                                                        @option.Label
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                        break;
+
+                                    case PromptVariableType.Checkbox:
+                                        <select id="@fieldId"
+                                                name="Values[@variable.Key]"
+                                                class="form-select">
+
+                                            @if (string.Equals(
+                                                currentValue,
+                                                "true",
+                                                StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <option value="true"
+                                                        selected>
+                                                    Да
+                                                </option>
+
+                                                <option value="false">
+                                                    Нет
+                                                </option>
+                                            }
+                                            else
+                                            {
+                                                <option value="true">
+                                                    Да
+                                                </option>
+
+                                                <option value="false"
+                                                        selected>
+                                                    Нет
+                                                </option>
+                                            }
+                                        </select>
+                                        break;
+
+                                    default:
+                                        <input id="@fieldId"
+                                               name="Values[@variable.Key]"
+                                               type="text"
+                                               value="@currentValue"
+                                               class="form-control"
+                                               placeholder="@variable.Placeholder"
+                                               required="@(variable.IsRequired
+                                                                                                                                                 ? "required"
+                                                                                                                                                 : null)" />
+                                        break;
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    variable.HelpText))
+                                {
+                                    <div class="form-text">
+                                        @variable.HelpText
+                                    </div>
+                                }
+
+                                @foreach (var error in fieldErrors)
+                                {
+                                    <div class="text-danger small mt-2">
+                                        @error.Message
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="constructor-submit-row">
+                        <p class="constructor-submit-hint">
+                            Поля со звёздочкой обязательны.
+                            Необязательные части исчезнут из результата,
+                            если оставить их пустыми.
+                        </p>
+
+                        <button type="submit"
+        class="btn btn-primary"
+        data-constructor-submit>
+    Собрать мой промпт
+</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="generated-result"
+         class="prompt-paper-section result-sheet"
+         aria-live="polite">
+                <div class="prompt-section-header">
+                    <h2 class="prompt-section-heading">
+                        <span class="prompt-section-number">
+                            3
+                        </span>
+
+                        Результат настройки
+                    </h2>
+
+                    @if (Model.HasRenderedResult)
+                    {
+                        <button type="button"
+                                class="btn
+                            btn-outline-primary
+                            btn-sm
+                            prompt-copy-button
+                            copy-prompt-button"
+                                data-copy-target="renderedPrompt">
+                            Скопировать
+                        </button>
+                    }
+                </div>
+
+                @if (Model.HasRenderedResult)
+                {
+                    <pre id="renderedPrompt"
+                         class="notebook-prompt-text">@Model.RenderedText</pre>
+                }
+                else
+                {
+                    <div class="prompt-result-placeholder">
+                        Заполните конструктор выше,
+                        и здесь появится готовый промпт.
+                    </div>
+                }
+            </section>
+        }
+
+        @* -------------------------------------------------------------------------
+           EN: Text and image result examples
+           RU: Текстовые и графические примеры результата
+           ------------------------------------------------------------------------- *@
+
+        <section class="prompt-paper-section example-sheet">
+            <div class="prompt-section-header">
+                <h2 class="prompt-section-heading">
+                    <span class="prompt-section-number">
+                        @exampleNumber
+                    </span>
+
+                    Примеры результата
+                </h2>
+
+                @if (Model.HasMedia)
+                {
+                    <span class="prompt-media-gallery-count">
+                        Изображений: @Model.MediaItems.Count
+                    </span>
+                }
+            </div>
+
+            @if (!Model.HasExampleContent)
+            {
+                <div class="prompt-result-placeholder">
+                    Автор пока не добавил примеры результата.
+                </div>
+            }
+            else
+            {
+                @* -----------------------------------------------------------------
+                   EN: Text result example
+                   RU: Текстовый пример результата
+                   ----------------------------------------------------------------- *@
+
+                @if (!string.IsNullOrWhiteSpace(
+                    Model.ExampleResult))
+                {
+                    <div class="prompt-example-text-block">
+                        <h3 class="prompt-example-subheading">
+                            Текстовый пример
+                        </h3>
+
+                        <pre class="notebook-prompt-text">@Model.ExampleResult</pre>
+                    </div>
+                }
+
+                @* -----------------------------------------------------------------
+                   EN: Public image gallery
+                   RU: Публичная галерея изображений
+                   ----------------------------------------------------------------- *@
+
+                @if (Model.HasMedia)
+                {
+                    <div class="prompt-media-gallery"
+                         aria-label="Примеры результата промпта">
+
+                        @foreach (var media in Model.MediaItems)
+                        {
+                            var imageUrl =
+                                Url.RouteUrl(
+                                    "PromptMediaContent",
+                                    new
+                                    {
+                                        id = media.Id
+                                    });
+
+                            var thumbnailUrl =
+                                Url.RouteUrl(
+                                    "PromptMediaThumbnail",
+                                    new
+                                    {
+                                        id = media.Id
+                                    });
+
+                            var imageAltText =
+                                string.IsNullOrWhiteSpace(
+                                    media.AltText)
+                                    ? $"Пример результата для промпта «{Model.Title}»"
+                                    : media.AltText;
+
+                            <figure class="prompt-media-gallery-item
+                                @(media.IsCover
+                                    ? "is-cover"
+                                    : string.Empty)">
+
+                                <a href="@imageUrl"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="prompt-media-gallery-link"
+                                   aria-label="Открыть изображение в полном размере"
+                                   data-prompt-lightbox-item
+                                   data-full-url="@imageUrl"
+                                   data-preview-url="@thumbnailUrl"
+                                   data-alt="@imageAltText"
+                                   data-caption="@media.Caption">
+
+                                    <img src="@thumbnailUrl"
+                                         alt="@imageAltText"
+                                         class="prompt-media-gallery-image"
+                                         loading="lazy"
+                                         decoding="async" />
+                                </a>
+
+                                @if (media.IsCover ||
+                                     (Model.IsPreview &&
+                                      media.Status !=
+                                          PromptMediaStatus.Published) ||
+                                     !string.IsNullOrWhiteSpace(
+                                         media.Caption))
+                                {
+                                    <figcaption class="prompt-media-gallery-caption">
+                                        <div class="prompt-media-gallery-badges">
+                                            @if (media.IsCover)
+                                            {
+                                                <span class="badge text-bg-primary">
+                                                    Обложка
+                                                </span>
+                                            }
+
+                                            @if (Model.IsPreview &&
+                                                 media.Status !=
+                                                     PromptMediaStatus.Published)
+                                            {
+                                                <span class="badge text-bg-warning">
+                                                    @media.StatusName
+                                                </span>
+                                            }
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            media.Caption))
+                                        {
+                                            <p>
+                                                @media.Caption
+                                            </p>
+                                        }
+                                    </figcaption>
+                                }
+                            </figure>
+                        }
+
+                        @* -------------------------------------------------------------------------
+                           EN: Accessible prompt media lightbox
+                           RU: Доступное окно просмотра медиа промпта
+                           ------------------------------------------------------------------------- *@
+
+                        @if (Model.HasMedia)
+                        {
+                            <dialog id="promptMediaLightbox"
+                                    class="prompt-media-lightbox"
+                                    aria-labelledby="promptMediaLightboxTitle">
+
+                                <div class="prompt-media-lightbox-panel">
+                                    <header class="prompt-media-lightbox-header">
+                                        <div>
+                                            <h2 id="promptMediaLightboxTitle"
+                                                class="prompt-media-lightbox-title">
+                                                Пример результата
+                                            </h2>
+
+                                            <span class="prompt-media-lightbox-position"
+                                                  data-lightbox-position
+                                                  aria-live="polite">
+                                            </span>
+                                        </div>
+
+                                        <button type="button"
+                                                class="prompt-media-lightbox-close"
+                                                data-lightbox-close
+                                                aria-label="Закрыть просмотр">
+                                            ×
+                                        </button>
+                                    </header>
+
+                                    <div class="prompt-media-lightbox-content">
+                                        <button type="button"
+                                                class="prompt-media-lightbox-navigation is-previous"
+                                                data-lightbox-previous
+                                                aria-label="Предыдущее изображение">
+                                            ‹
+                                        </button>
+
+                                        <figure class="prompt-media-lightbox-figure">
+                                            <div class="prompt-media-lightbox-image-wrapper">
+                                                <img src=""
+                                                     alt=""
+                                                     class="prompt-media-lightbox-image"
+                                                     data-lightbox-image />
+
+                                                <span class="prompt-media-lightbox-status"
+                                                      data-lightbox-status
+                                                      aria-live="polite">
+                                                    Загрузка изображения…
+                                                </span>
+                                            </div>
+
+                                            <figcaption class="prompt-media-lightbox-caption">
+                                                <p data-lightbox-caption
+                                                   hidden>
+                                                </p>
+                                            </figcaption>
+                                        </figure>
+
+                                        <button type="button"
+                                                class="prompt-media-lightbox-navigation is-next"
+                                                data-lightbox-next
+                                                aria-label="Следующее изображение">
+                                            ›
+                                        </button>
+                                    </div>
+                                </div>
+                            </dialog>
+                        }
+
+                    
+                    
+                    </div>
+
+                    <p class="prompt-media-gallery-hint">
+                        Нажмите на изображение, чтобы открыть его в полном размере.
+                    </p>
+                }
+            }
+        </section>
+
+        @*
+        EN: Prompt comments block.
+        RU: Блок комментариев к промпту.
+    *@
+        @if (!Model.IsPreview)
+        {
+            <section class="prompt-paper-section prompt-comments-section"
+                     id="comments">
+
+                <div class="prompt-section-header">
+                    <h2 class="prompt-section-heading">
+                        <span class="prompt-section-number">
+                            @((Model.HasConstructor ? 5 : 3))
+                        </span>
+
+                        Комментарии
+                    </h2>
+
+                    <span class="prompt-comments-count">
+                        @Model.CommentCount
+                    </span>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="PromptComments"
+                          asp-action="AddComment"
+                          asp-route-slug="@Model.Slug"
+                          method="post"
+                          class="prompt-comment-form">
+
+                        @Html.AntiForgeryToken()
+
+                        <label for="commentBody"
+                               class="prompt-comment-form-label">
+                            Написать комментарий
+                        </label>
+
+                        <textarea id="commentBody"
+                                  name="body"
+                                  class="form-control prompt-comment-textarea"
+                                  rows="4"
+                                  maxlength="1000"
+                                  required
+                                  placeholder="Поделитесь опытом использования промпта или задайте вопрос автору."></textarea>
+
+                        <div class="prompt-comment-form-footer">
+                            <span>
+                                До 1000 символов.
+                            </span>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Опубликовать
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="prompt-comment-login-note">
+                        <a asp-area="Identity"
+                           asp-page="/Account/Login"
+                           asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}#comments")"
+                           class="notebook-inline-link">
+                            Войдите
+                        </a>,
+                        чтобы оставить комментарий.
+                    </div>
+                }
+
+                @if (Model.Comments.Count == 0)
+                {
+                    <div class="prompt-comments-empty">
+                        Комментариев пока нет. Будьте первым, кто обсудит этот промпт.
+                    </div>
+                }
+                else
+                {
+                    <div class="prompt-comments-list">
+                        @foreach (var comment in Model.Comments)
+                        {
+                            <article class="prompt-comment-card @(comment.IsHiddenByModerator ? "prompt-comment-card-hidden" : string.Empty)"
+                                     id="comment-@comment.CommentId">
+
+                                <header class="prompt-comment-header">
+                                    <a asp-controller="Authors"
+                                       asp-action="Details"
+                                       asp-route-id="@comment.AuthorId"
+                                       class="prompt-comment-author">
+                                        @comment.AuthorName
+                                    </a>
+
+                                    <div class="prompt-comment-meta">
+    <time datetime="@DateTime.SpecifyKind(comment.CreatedAtUtc, DateTimeKind.Utc).ToString("O")"
+          data-local-datetime>
+        @comment.CreatedAtUtc.ToString("dd.MM.yyyy HH:mm")
+    </time>
+
+    @if (comment.WasEdited)
+    {
+        <span>
+            изменён
+        </span>
+    }
+
+                                        @if (comment.IsHiddenByModerator)
+                                        {
+                                            <span class="prompt-comment-hidden-badge">
+                                                скрыт
+                                            </span>
+                                        }
+                                    </div>
+                                </header>
+
+                                @if (comment.IsHiddenByModerator)
+                                {
+                                    <div class="prompt-comment-moderation-note">
+                                        Комментарий скрыт модератором.
+
+                                        @if (!string.IsNullOrWhiteSpace(comment.ModerationReason))
+                                        {
+                                            <span>
+                                                Причина: @comment.ModerationReason
+                                            </span>
+                                        }
+                                    </div>
+                                }
+
+                                <div class="prompt-comment-body">
+                                    @comment.Body
+                                </div>
+
+                                @if (comment.CanDelete || comment.CanHide || comment.CanReport || comment.HasOpenReportByCurrentUser)
+                                {
+                                    <footer class="prompt-comment-actions">
+                                        @if (comment.CanDelete)
+                                        {
+                                            <form asp-controller="PromptComments"
+                                                  asp-action="DeleteComment"
+                                                  asp-route-slug="@Model.Slug"
+                                                  asp-route-commentId="@comment.CommentId"
+                                                  method="post"
+                                                  class="prompt-comment-action-form">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="prompt-comment-delete-button"
+                                                        onclick="return confirm('Удалить комментарий?');">
+                                                    Удалить
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (comment.CanReport)
+                                        {
+                                            <details class="prompt-comment-report-details">
+                                                <summary>
+                                                    Пожаловаться
+                                                </summary>
+
+                                                <form asp-controller="PromptComments"
+                                                      asp-action="ReportComment"
+                                                      asp-route-slug="@Model.Slug"
+                                                      asp-route-commentId="@comment.CommentId"
+                                                      method="post"
+                                                      class="prompt-comment-report-form">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <div class="prompt-comment-report-grid">
+                                                        <label class="visually-hidden"
+                                                               for="commentReportReason-@comment.CommentId">
+                                                            Причина жалобы
+                                                        </label>
+
+                                                        <select id="commentReportReason-@comment.CommentId"
+                                                                name="reason"
+                                                                class="form-select form-select-sm"
+                                                                required>
+                                                            <option value="Spam">
+                                                                Спам или реклама
+                                                            </option>
+
+                                                            <option value="InsultOrHarassment">
+                                                                Оскорбление или травля
+                                                            </option>
+
+                                                            <option value="HateOrExtremism">
+                                                                Ненависть или экстремизм
+                                                            </option>
+
+                                                            <option value="PersonalData">
+                                                                Личные данные
+                                                            </option>
+
+                                                            <option value="IllegalContent">
+                                                                Запрещённый контент
+                                                            </option>
+
+                                                            <option value="OffTopic">
+                                                                Не по теме
+                                                            </option>
+
+                                                            <option value="Other">
+                                                                Другое
+                                                            </option>
+                                                        </select>
+
+                                                        <label class="visually-hidden"
+                                                               for="commentReportDetails-@comment.CommentId">
+                                                            Подробности
+                                                        </label>
+
+                                                        <textarea id="commentReportDetails-@comment.CommentId"
+                                                                  name="details"
+                                                                  class="form-control form-control-sm"
+                                                                  rows="2"
+                                                                  maxlength="1000"
+                                                                  placeholder="Подробности, если нужно"></textarea>
+
+                                                        <button type="submit"
+                                                                class="prompt-comment-report-button"
+                                                                onclick="return confirm('Отправить жалобу на комментарий?');">
+                                                            Отправить
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </details>
+                                        }
+
+                                        @if (comment.HasOpenReportByCurrentUser)
+                                        {
+                                            <div class="prompt-comment-report-status">
+                                                Жалоба уже отправлена.
+                                            </div>
+                                        }
+
+                                        @if (comment.CanHide)
+                                        {
+                                            <details class="prompt-comment-moderation-details">
+                                                <summary>
+                                                    Модерация
+                                                </summary>
+
+                                                <form asp-controller="PromptComments"
+                                                      asp-action="HideComment"
+                                                      asp-route-slug="@Model.Slug"
+                                                      asp-route-commentId="@comment.CommentId"
+                                                      method="post"
+                                                      class="prompt-comment-hide-form">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <label class="visually-hidden"
+                                                           for="moderationReason-@comment.CommentId">
+                                                        Причина скрытия
+                                                    </label>
+
+                                                    <div class="prompt-comment-hide-row">
+                                                        <input id="moderationReason-@comment.CommentId"
+                                                               type="text"
+                                                               name="moderationReason"
+                                                               class="form-control form-control-sm"
+                                                               maxlength="500"
+                                                               required
+                                                               placeholder="Причина скрытия" />
+
+                                                        <button type="submit"
+                                                                class="prompt-comment-hide-button"
+                                                                onclick="return confirm('Скрыть комментарий?');">
+                                                            Скрыть
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </details>
+                                        }
+                                    </footer>
+                                }
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
+    </main>
+
+    <aside class="prompt-detail-sidebar">
+
+        <section class="prompt-sidebar-note">
+            <h2>
+                О промпте
+            </h2>
+
+            <ul class="prompt-sidebar-list">
+                <li>
+    <span>Категория</span>
+
+    <strong>
+        <a asp-route="PromptsCategory"
+   asp-route-category="@Model.CategorySlug"
+   class="prompt-detail-category text-decoration-none">
+    @Model.CategoryName
+</a>
+    </strong>
+</li>
+
+<li>
+    <span>Сложность</span>
+
+    <strong>
+        <a asp-controller="Prompts"
+           asp-action="Index"
+           asp-route-difficulty="@Model.DifficultyValue"
+           class="notebook-inline-link">
+            @Model.DifficultyName
+        </a>
+    </strong>
+</li>
+
+                <li>
+                    <span>Язык</span>
+                    <strong>@Model.LanguageCode</strong>
+                </li>
+                @*
+                <li>
+                    <span>Версия</span>
+                    <strong>@Model.VersionNumber</strong>
+                </li>
+                *@
+
+                <li>
+                    <span>Конструктор</span>
+
+                    <strong>
+                        @(Model.HasConstructor
+                            ? "Есть"
+                            : "Нет")
+                    </strong>
+                </li>
+            </ul>
+        </section>
+
+
+        @if (!Model.IsPreview &&
+     Model.AuthorSupport?.IsAvailable == true)
+{
+    <section class="prompt-sidebar-note
+                    author-support-sidebar">
+
+        <div class="author-support-card-kicker">
+            Сказать спасибо
+        </div>
+
+        <h2>
+            Поддержать автора
+        </h2>
+
+        <p>
+            Промпт оказался полезным?
+            Можно добровольно поблагодарить
+            @Model.AuthorName.
+        </p>
+
+        <button type="button"
+                class="btn btn-outline-primary
+                       author-support-open-button"
+                data-author-support-open>
+            Поддержать автора
+        </button>
+    </section>
+
+    <partial name="_AuthorSupportDialog"
+             model="Model.AuthorSupport" />
+}
+
+
+        @if (!Model.IsPreview)
+        {
+            <section class="prompt-sidebar-note prompt-report-panel sidebar-report-panel">
+                <h2>
+                    Сообщить о проблеме
+                </h2>
+
+                <p class="prompt-report-description">
+                    Жалоба попадёт в очередь модератора.
+                    Автор промпта не увидит ваш email.
+                </p>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @if (Model.HasCurrentUserOpenReport)
+                    {
+                        <div class="prompt-report-status">
+                            У вас уже есть открытая жалоба.
+                            Новая отправка обновит её.
+                        </div>
+                    }
+
+                    <form asp-controller="Prompts"
+                          asp-action="ReportPrompt"
+                          asp-route-slug="@Model.Slug"
+                          method="post"
+                          class="prompt-report-form">
+
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="reportReason"
+                                   class="form-label">
+                                Причина
+                            </label>
+
+                            <select id="reportReason"
+                                    name="reason"
+                                    class="form-select"
+                                    required>
+                                <option value=""
+                                        selected
+                                        disabled>
+                                    Выберите причину
+                                </option>
+
+                                <option value="@PromptReportReason.Spam">
+                                    Спам или реклама
+                                </option>
+
+                                <option value="@PromptReportReason.IncorrectContent">
+                                    Некорректный промпт
+                                </option>
+
+                                <option value="@PromptReportReason.UnsafeContent">
+                                    Небезопасное содержание
+                                </option>
+
+                                <option value="@PromptReportReason.Copyright">
+                                    Нарушение авторских прав
+                                </option>
+
+                                <option value="@PromptReportReason.Other">
+                                    Другое
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reportDetails"
+                                   class="form-label">
+                                Комментарий
+                            </label>
+
+                            <textarea id="reportDetails"
+                                      name="details"
+                                      class="form-control"
+                                      maxlength="1000"
+                                      rows="4"
+                                      placeholder="Коротко опишите проблему."></textarea>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-outline-danger btn-sm w-100"
+                                onclick="return confirm('Отправить жалобу модераторам?');">
+                            Отправить жалобу
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity"
+                       asp-page="/Account/Login"
+                       asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")"
+                       class="btn btn-outline-primary btn-sm w-100">
+                        Войти, чтобы пожаловаться
+                    </a>
+                }
+            </section>
+        }
+
+        @if (Model.Errors.Any(
+            error => error.VariableKey is null))
+        {
+            <section class="prompt-sidebar-note prompt-general-errors">
+                <h2>
+                    Что-то пошло не так
+                </h2>
+
+                <div class="alert alert-danger mb-0">
+                    @foreach (var error in Model.Errors.Where(
+                        error => error.VariableKey is null))
+                    {
+                        <div>@error.Message</div>
+                    }
+                </div>
+            </section>
+        }
+    </aside>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/prompt-media-lightbox.js"
+        asp-append-version="true"></script>
+
+    <script>
+
+        const copyMetricForm =
+            document.getElementById(
+                "copyMetricForm");
+
+        const copyCountBadge =
+            document.getElementById(
+                "copyCountBadge");
+
+        async function copyTextToClipboard(text) {
+            if (navigator.clipboard &&
+                window.isSecureContext) {
+
+                await navigator.clipboard.writeText(
+                    text);
+
+                return;
+            }
+
+            const temporaryTextarea =
+                document.createElement(
+                    "textarea");
+
+            temporaryTextarea.value = text;
+
+            temporaryTextarea.style.position =
+                "fixed";
+
+            temporaryTextarea.style.opacity =
+                "0";
+
+            document.body.appendChild(
+                temporaryTextarea);
+
+            temporaryTextarea.select();
+
+            const copied =
+                document.execCommand("copy");
+
+            temporaryTextarea.remove();
+
+            if (!copied) {
+                throw new Error(
+                    "Не удалось скопировать текст.");
+            }
+        }
+
+        async function registerCopy() {
+            if (!copyMetricForm) {
+                return;
+            }
+
+            const response = await fetch(
+                copyMetricForm.action,
+                {
+                    method: "POST",
+
+                    body: new FormData(
+                        copyMetricForm),
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const result =
+                await response.json();
+
+            if (copyCountBadge) {
+                copyCountBadge.innerText =
+                    `Копирования: ${result.copyCount}`;
+            }
+        }
+
+        document
+            .querySelectorAll(
+                ".copy-prompt-button")
+            .forEach(button => {
+                button.addEventListener(
+                    "click",
+                    async () => {
+                        const targetId =
+                            button.dataset
+                                .copyTarget;
+
+                        const promptElement =
+                            document.getElementById(
+                                targetId);
+
+                        if (!promptElement) {
+                            return;
+                        }
+
+                        const previousText =
+                            button.innerText;
+
+                        try {
+                            await copyTextToClipboard(
+                                promptElement
+                                    .innerText);
+
+                            button.innerText =
+                                "Скопировано";
+
+                            await registerCopy();
+                        }
+                        catch {
+                            button.innerText =
+                                "Ошибка";
+                        }
+
+                        setTimeout(() => {
+                            button.innerText =
+                                previousText;
+                        }, 1500);
+                    });
+            });
+
+            document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        const hasRenderedResult =
+            @Model.HasRenderedResult.ToString().ToLowerInvariant();
+
+        const hasRenderErrors =
+            @Model.Errors.Any().ToString().ToLowerInvariant();
+
+        if (hasRenderErrors) {
+            document
+                .getElementById("constructor")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            return;
+        }
+
+        if (hasRenderedResult) {
+            document
+                .getElementById("generated-result")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }
+    });
+
+
+    const constructorForm =
+    document.querySelector(
+        "[data-prompt-constructor-form]");
+
+const constructorSubmitButton =
+    document.querySelector(
+        "[data-constructor-submit]");
+
+constructorForm?.addEventListener(
+    "submit",
+    () => {
+        if (!constructorSubmitButton) {
+            return;
+        }
+
+        constructorSubmitButton.disabled =
+            true;
+
+        constructorSubmitButton.innerText =
+            "Собираем…";
+    });
+    </script>
+}

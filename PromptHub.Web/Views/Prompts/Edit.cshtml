@@ -1,0 +1,133 @@
+﻿@model PromptHub.Web.Models.ViewModels.Prompts.EditPromptViewModel
+
+@{
+    ViewData["Title"] = "Редактировать промпт";
+}
+
+<section class="prompt-form-page">
+    <header class="prompt-form-header">
+        <div class="prompt-form-kicker">
+            Редактирование листа
+        </div>
+
+        <h1 class="prompt-form-title">
+            Редактировать промпт
+        </h1>
+
+        <p class="prompt-form-description">
+            Исправьте текст, описание или поля конструктора.
+            После сохранения промпт снова можно будет
+            отправить на модерацию.
+        </p>
+    </header>
+
+    <form asp-controller="Prompts"
+          asp-action="Edit"
+          asp-route-id="@Model.Id"
+          method="post"
+          class="prompt-form-layout">
+
+        <input asp-for="Id"
+               type="hidden" />
+
+        <main class="prompt-form-sheet">
+            <partial name="_PromptFormFields"
+                     model="Model" />
+
+         
+            <div class="prompt-form-actions">
+                <p class="prompt-form-actions-note">
+                    Изменения сохраняются в текущем черновике.
+                    Опубликованные и находящиеся на проверке
+                    материалы редактировать нельзя.
+                </p>
+
+                <div class="prompt-form-action-buttons">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Сохранить изменения
+                    </button>
+
+                    @* EN: Separate media management / RU: Отдельное управление медиа *@
+
+                    <a asp-controller="PromptMedia"
+                       asp-action="Manage"
+                       asp-route-promptId="@Model.Id"
+                       class="btn btn-outline-primary">
+                        Управление медиа
+                    </a>
+
+                    <a asp-controller="Prompts"
+                       asp-action="Preview"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-outline-primary">
+                        Предпросмотр
+                    </a>
+
+                    <a asp-controller="Prompts"
+                       asp-action="My"
+                       class="btn btn-outline-secondary">
+                        Отмена
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <aside class="prompt-form-sidebar">
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Перед сохранением
+                </h2>
+
+                <ul class="prompt-form-checklist">
+                    <li>
+                        Проверьте готовый текст
+                    </li>
+
+                    <li>
+                        Проверьте подписи полей
+                    </li>
+
+                    <li>
+                        Уберите лишние переменные
+                    </li>
+
+                    <li>
+                        Обновите пример результата
+                    </li>
+                </ul>
+            </section>
+
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Конструктор
+                </h2>
+
+                <p>
+                    При переименовании поля его видимый маркер
+                    автоматически изменится во всём шаблоне.
+                </p>
+            </section>
+
+            <section class="prompt-form-sidebar-note">
+                <h2>
+                    Следующий шаг
+                </h2>
+
+                <p>
+                    Сохраните изменения, откройте предпросмотр
+                    и убедитесь, что страница выглядит правильно.
+                </p>
+            </section>
+        </aside>
+    </form>
+</section>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/prompt-form-editor.js"
+            asp-append-version="true">
+    </script>
+}

@@ -1,0 +1,533 @@
+﻿@using PromptHub.Web.Extensions
+@using PromptHub.Web.Models.Enums
+@model PromptHub.Web.Models.ViewModels.Prompts.MyPromptsViewModel
+
+@{
+    ViewData["Title"] = "Мои промпты";
+
+    var totalCount =
+        Model.Prompts.Count;
+
+    var draftCount =
+        Model.Prompts.Count(prompt =>
+            prompt.Status ==
+            PromptStatus.Draft);
+
+    var moderationCount =
+        Model.Prompts.Count(prompt =>
+            prompt.Status ==
+            PromptStatus.PendingModeration);
+
+    var publishedCount =
+        Model.Prompts.Count(prompt =>
+            prompt.Status ==
+            PromptStatus.Published);
+}
+
+<section>
+    <header class="author-page-header">
+        <div>
+            <div class="author-page-kicker">
+                Личный блокнот автора
+            </div>
+
+            <h1 class="author-page-title">
+                Мои промпты
+            </h1>
+
+            <p class="author-page-description">
+                Здесь находятся ваши черновики,
+                публикации и материалы,
+                ожидающие проверки.
+            </p>
+        </div>
+
+        <a asp-controller="Prompts"
+           asp-action="Create"
+           class="btn btn-primary">
+            + Добавить промпт
+        </a>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <div class="author-summary-grid">
+        <div class="author-summary-note">
+            <div class="author-summary-label">
+                Всего материалов
+            </div>
+
+            <div class="author-summary-value">
+                @totalCount
+            </div>
+        </div>
+
+        <div class="author-summary-note">
+            <div class="author-summary-label">
+                Черновики
+            </div>
+
+            <div class="author-summary-value">
+                @draftCount
+            </div>
+        </div>
+
+        <div class="author-summary-note">
+            <div class="author-summary-label">
+                На проверке
+            </div>
+
+            <div class="author-summary-value">
+                @moderationCount
+            </div>
+        </div>
+
+        <div class="author-summary-note">
+            <div class="author-summary-label">
+                Опубликовано
+            </div>
+
+            <div class="author-summary-value">
+                @publishedCount
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Prompts.Count == 0)
+    {
+        <div class="author-empty-sheet">
+            <h2>
+                В блокноте пока пусто
+            </h2>
+
+            <p>
+                Создайте первый готовый промпт.
+                При необходимости добавьте к нему
+                понятный конструктор настройки.
+            </p>
+
+            <a asp-controller="Prompts"
+               asp-action="Create"
+               class="btn btn-primary">
+                Создать первый промпт
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="author-prompts-list">
+            @foreach (var prompt in Model.Prompts)
+            {
+                var stateClass =
+                    prompt.Status switch
+                    {
+                        PromptStatus.Draft =>
+                            "state-draft",
+
+                        PromptStatus.PendingModeration =>
+                            "state-pending",
+
+                        PromptStatus.Published =>
+                            "state-published",
+
+                        PromptStatus.Rejected =>
+                            "state-rejected",
+
+                        PromptStatus.Archived =>
+                            "state-archived",
+
+                        _ =>
+                            string.Empty
+                    };
+
+                <article class="author-prompt-card @stateClass">
+                    <div class="author-prompt-layout">
+                        <div>
+                            <div class="author-prompt-badge-zone">
+                                <div class="author-prompt-tags">
+                                    <span class="notebook-tag notebook-tag-purple">
+                                        @prompt.CategoryName
+                                    </span>
+
+                                    <span class="notebook-tag @prompt.StatusBadgeClass">
+                                        @prompt.StatusName
+                                    </span>
+
+                                    <span class="notebook-tag">
+                                        @prompt.DifficultyName
+                                    </span>
+
+                                    @if (prompt.HasConstructor)
+                                    {
+                                        <span class="notebook-tag notebook-tag-blue">
+                                            Есть настройка
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="notebook-tag">
+                                            Готовый промпт
+                                        </span>
+                                    }
+                                </div>
+
+                                @if (prompt.Tags.Count > 0)
+                                {
+                                    <div class="author-prompt-extra-tags">
+                                        @foreach (var tag in prompt.Tags)
+                                        {
+                                            <span class="prompt-tag-badge">
+                                                #@tag.Name
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="author-prompt-extra-tags prompt-note-extra-tags-empty">
+                                    </div>
+                                }
+                            </div>
+
+                            @if (prompt.HasWorkingCopy)
+                            {
+                                <div class="moderation-feedback-note mb-3">
+
+                                    @if (prompt.WorkingVersionStatus ==
+                                        PromptVersionStatus.PendingModeration)
+                                    {
+                                        <div class="moderation-feedback-title">
+                                            Изменения находятся на проверке
+                                        </div>
+
+                                        <div class="moderation-feedback-text">
+                                            Текущая опубликованная версия остаётся
+                                            доступной пользователям до решения модератора.
+                                        </div>
+                                    }
+                                    else if (prompt.WorkingVersionStatus ==
+                                             PromptVersionStatus.Rejected)
+                                    {
+                                        <div class="moderation-feedback-title">
+                                            Изменения отклонены
+                                        </div>
+
+                                        <div class="moderation-feedback-text">
+                                            @if (!string.IsNullOrWhiteSpace(
+                                                prompt.WorkingModerationComment))
+                                            {
+                                                @prompt.WorkingModerationComment
+                                            }
+                                            else
+                                            {
+                                                <span>
+                                                    Модератор не указал комментарий.
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="moderation-feedback-title">
+                                            Есть неопубликованные изменения
+                                        </div>
+
+                                        <div class="moderation-feedback-text">
+                                            Публичная версия пока остаётся без изменений.
+                                        </div>
+                                    }
+
+                                </div>
+                            }
+
+                            <h2 class="author-prompt-title">
+                                @prompt.Title
+                            </h2>
+
+                            <p class="author-prompt-summary">
+                                @prompt.Summary
+                            </p>
+
+                            @if (prompt.Status ==
+                                    PromptStatus.Rejected &&
+                                 !string.IsNullOrWhiteSpace(
+                                     prompt.ModerationComment))
+                            {
+                                <div class="moderation-feedback-note">
+                                    <div class="moderation-feedback-title">
+                                        Заметка модератора
+                                    </div>
+
+                                    <div class="moderation-feedback-text">
+                                        @prompt.ModerationComment
+                                    </div>
+                                </div>
+                            }
+
+
+                            @if (prompt.Status ==
+                            PromptStatus.Archived)
+                            {
+                                <div class="moderation-feedback-note archive-feedback-note">
+                                    <div class="moderation-feedback-title">
+                                        Публикация скрыта модератором
+                                    </div>
+
+                                    <div class="moderation-feedback-text">
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            prompt.ArchiveReason))
+                                        {
+                                            @prompt.ArchiveReason
+                                        }
+                                        else
+                                        {
+                                            <span>
+                                                Причина скрытия не указана.
+                                            </span>
+                                        }
+                                    </div>
+
+                                    @if (prompt.ArchivedAtUtc.HasValue)
+                                    {
+                                        <div class="moderation-feedback-date">
+                                            Скрыто:
+
+                                            <time datetime="@prompt.ArchivedAtUtc.ToUtcIsoString()"
+                                                  data-local-datetime>
+                                                @prompt.ArchivedAtUtc.Value
+                                                .ToString("dd.MM.yyyy HH:mm")
+                                            </time>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="author-prompt-meta">
+                                <span class="author-prompt-meta-item">
+                                    Создан:
+
+                                    <time datetime="@prompt.CreatedAtUtc.ToUtcIsoString()"
+                                          data-local-date>
+                                        @prompt.CreatedAtUtc
+                                        .ToString("dd.MM.yyyy")
+                                    </time>
+                                </span>
+
+                                @if (prompt.UpdatedAtUtc.HasValue)
+                                {
+                                    <span class="author-prompt-meta-item">
+                                        Изменён:
+
+                                        <time datetime="@prompt.UpdatedAtUtc.ToUtcIsoString()"
+                                              data-local-date>
+                                            @prompt.UpdatedAtUtc.Value
+                                            .ToString("dd.MM.yyyy")
+                                        </time>
+                                    </span>
+                                }
+
+                                <span class="author-prompt-meta-item">
+                                    Просмотры:
+                                    @prompt.ViewCount
+                                </span>
+
+                                <span class="author-prompt-meta-item">
+                                    Копирования:
+                                    @prompt.CopyCount
+                                </span>
+
+                                <span class="author-prompt-meta-item">
+                                    Комментарии:
+                                    @prompt.VisibleCommentCount
+                                </span>
+
+                            </div>
+                        </div>
+
+                        <div class="author-prompt-actions">
+
+                            @* ---------------------------------------------------------------------
+       EN: Prompt media management
+       RU: Управление медиа промпта
+       --------------------------------------------------------------------- *@
+
+                            <a asp-controller="PromptMedia"
+                               asp-action="Manage"
+                               asp-route-promptId="@prompt.Id"
+                               class="btn btn-outline-primary btn-sm">
+                                Медиа
+                            </a>
+
+                            @* ---------------------------------------------------------------------
+       EN: Preview draft or hidden working changes.
+       RU: Предпросмотр черновика или скрытых изменений.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.Status != PromptStatus.Published ||
+                                 prompt.HasWorkingCopy)
+                            {
+                                <a asp-controller="Prompts"
+                                   asp-action="Preview"
+                                   asp-route-id="@prompt.Id"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Предпросмотр
+                                </a>
+                            }
+
+                            @* ---------------------------------------------------------------------
+       EN: Existing editable version.
+       RU: Уже существующая редактируемая версия.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.CanEdit)
+                            {
+                                <a asp-controller="Prompts"
+                                   asp-action="Edit"
+                                   asp-route-id="@prompt.Id"
+                                   class="btn btn-outline-primary btn-sm">
+
+                                    @(prompt.HasWorkingCopy
+                                        ? "Продолжить редактирование"
+                                        : "Редактировать")
+                                </a>
+                            }
+
+                            @* ---------------------------------------------------------------------
+       EN: Published prompt without a working copy.
+       RU: Опубликованный промпт без рабочей копии.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.Status ==
+                                    PromptStatus.Published &&
+                                 !prompt.HasWorkingCopy)
+                            {
+                                <form asp-controller="Prompts"
+                                      asp-action="StartEdit"
+                                      asp-route-id="@prompt.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-outline-primary btn-sm">
+                                        Редактировать
+                                    </button>
+                                </form>
+                            }
+
+                            @* ---------------------------------------------------------------------
+       EN: Submit either the first draft or hidden working copy.
+       RU: Отправка первого черновика или скрытой рабочей копии.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.CanSubmitForModeration)
+                            {
+                                <form asp-controller="Prompts"
+                                      asp-action="SubmitForModeration"
+                                      asp-route-id="@prompt.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-primary btn-sm"
+                                            onclick="return confirm('Отправить изменения на модерацию?');">
+
+                                        @(prompt.HasWorkingCopy
+                                            ? "Отправить изменения на проверку"
+                                            : "Отправить на проверку")
+                                    </button>
+                                </form>
+                            }
+
+                            @if (prompt.HasWorkingCopy &&
+     (prompt.WorkingVersionStatus ==
+          PromptVersionStatus.Draft ||
+      prompt.WorkingVersionStatus ==
+          PromptVersionStatus.Rejected))
+                            {
+                                <form asp-controller="Prompts"
+                                      asp-action="DiscardWorkingCopy"
+                                      asp-route-id="@prompt.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Отменить все неопубликованные изменения? Вернуться к ним после этого будет нельзя.');">
+                                        Отменить изменения
+                                    </button>
+                                </form>
+                            }
+
+                            @* ---------------------------------------------------------------------
+       EN: Moderation is already in progress.
+       RU: Версия уже находится на модерации.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.IsPendingModeration)
+                            {
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        disabled>
+
+                                    @(prompt.HasWorkingCopy
+                                        ? "Изменения на проверке"
+                                        : "Ожидает проверки")
+                                </button>
+                            }
+
+                            @* ---------------------------------------------------------------------
+       EN: Public prompt actions.
+       RU: Действия опубликованного промпта.
+       --------------------------------------------------------------------- *@
+
+                            @if (prompt.Status ==
+                                PromptStatus.Published)
+                            {
+                                <a asp-controller="Prompts"
+                                   asp-action="Details"
+                                   asp-route-slug="@prompt.Slug"
+                                   class="btn btn-primary btn-sm">
+                                    Открыть публикацию
+                                </a>
+
+                                @if (!prompt.HasWorkingCopy)
+                                {
+                                    <form asp-controller="Prompts"
+                                          asp-action="Unpublish"
+                                          asp-route-id="@prompt.Id"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Снять промпт с публикации? Он исчезнет из публичного каталога и будет возвращён в черновик. Для повторной публикации потребуется модерация.');">
+                                            Снять с публикации
+                                        </button>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

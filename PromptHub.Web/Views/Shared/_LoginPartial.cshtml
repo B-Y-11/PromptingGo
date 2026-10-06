@@ -1,0 +1,77 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PromptHub.Web.Models.Entities
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ApplicationUser? currentUser = null;
+
+    if (SignInManager.IsSignedIn(User))
+    {
+        currentUser =
+            await UserManager.GetUserAsync(User);
+    }
+
+    var accountName =
+        !string.IsNullOrWhiteSpace(
+            currentUser?.DisplayName)
+            ? currentUser.DisplayName
+            : currentUser?.Email
+              ?? User.Identity?.Name
+              ?? "Профиль";
+}
+
+<ul class="navbar-nav
+           align-items-lg-center
+           gap-lg-1">
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link account-link"
+               asp-area="Identity"
+               asp-page="/Account/Manage/Index"
+               title="Личный кабинет">
+
+                @accountName
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <form asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action(
+                      "Index",
+                      "Home",
+                      new
+                      {
+                          area = ""
+                      })">
+
+                <button type="submit"
+                        class="btn btn-ghost">
+                    Выйти
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link"
+               asp-area="Identity"
+               asp-page="/Account/Login">
+                Войти
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="btn btn-primary ms-lg-1"
+               asp-area="Identity"
+               asp-page="/Account/Register">
+                Регистрация
+            </a>
+        </li>
+    }
+</ul>

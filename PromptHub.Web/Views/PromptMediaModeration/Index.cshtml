@@ -1,0 +1,404 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.PromptMediaModerationQueueViewModel
+
+@{
+    ViewData["Title"] = "Модерация медиа";
+}
+
+<section class="moderation-page">
+    @* -------------------------------------------------------------------------
+       EN: Media moderation header
+       RU: Заголовок модерации медиа
+       ------------------------------------------------------------------------- *@
+
+    <header class="moderation-page-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Модерация
+            </div>
+
+            <h1 class="moderation-page-title">
+                Медиа промптов
+            </h1>
+
+            <p class="moderation-page-description">
+                Здесь находятся новые изображения и изменения
+                подписей и alt-текста, ожидающие проверки.
+            </p>
+
+            <a asp-controller="Moderation"
+               asp-action="Dashboard"
+               class="btn btn-outline-secondary btn-sm">
+                Вернуться к панели
+            </a>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.PendingCount
+            </span>
+
+            <span class="moderation-queue-count-label">
+                ожидают проверки
+            </span>
+        </div>
+    </header>
+
+    @* -------------------------------------------------------------------------
+       EN: Operation result messages
+       RU: Сообщения о результате операции
+       ------------------------------------------------------------------------- *@
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @* -------------------------------------------------------------------------
+       EN: Pending media moderation cards
+       RU: Карточки ожидающих запросов на модерацию
+       ------------------------------------------------------------------------- *@
+
+    @if (Model.MediaItems.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Очередь пуста
+            </h2>
+
+            <p class="text-muted mb-0">
+                Сейчас нет новых изображений или изменений описания,
+                ожидающих модерации.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-xl-2 g-4">
+            @foreach (var media in Model.MediaItems)
+            {
+                var imageUrl =
+                    Url.RouteUrl(
+                        "PromptMediaThumbnail",
+                        new
+                        {
+                            id = media.Id
+                        });
+
+                var fileSizeMb =
+                    media.FileSizeBytes /
+                    1024d /
+                    1024d;
+
+                var submittedAt =
+                    media.ReviewSubmittedAtUtc;
+
+                var imageAltText =
+                    string.IsNullOrWhiteSpace(
+                        media.ProposedAltText)
+                        ? "Изображение на модерации"
+                        : media.ProposedAltText;
+
+                var approveConfirmation =
+                    media.IsMetadataReview
+                        ? "Одобрить изменения подписи и alt-текста?"
+                        : "Одобрить и опубликовать изображение?";
+
+                var rejectConfirmation =
+                    media.IsMetadataReview
+                        ? "Отклонить изменения подписи и alt-текста?"
+                        : "Отклонить изображение?";
+
+                <div class="col">
+                    <article class="card h-100">
+                        @* -----------------------------------------------------
+                           EN: Media preview
+                           RU: Предпросмотр медиа
+                           ----------------------------------------------------- *@
+
+                        <img src="@imageUrl"
+                             alt="@imageAltText"
+                             class="card-img-top"
+                             style="height: 360px; object-fit: contain; background: #f4f1e8;" />
+
+                        <div class="card-body">
+                            @* -------------------------------------------------
+                               EN: Request type and media state
+                               RU: Тип запроса и состояние медиа
+                               ------------------------------------------------- *@
+
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @if (media.IsMetadataReview)
+                                {
+                                    <span class="badge text-bg-info">
+                                        Изменение описания
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">
+                                        Новое изображение
+                                    </span>
+                                }
+
+                                @if (media.IsCover)
+                                {
+                                    <span class="badge text-bg-primary">
+                                        Обложка
+                                    </span>
+                                }
+                            </div>
+
+                            @* -------------------------------------------------
+                               EN: Related prompt and author
+                               RU: Связанный промпт и автор
+                               ------------------------------------------------- *@
+
+                            <h2 class="h4">
+                                <a asp-controller="Prompts"
+                                   asp-action="Details"
+                                   asp-route-slug="@media.PromptSlug">
+                                    @media.PromptTitle
+                                </a>
+                            </h2>
+
+                            <div class="small text-muted mb-3">
+                                Автор:
+
+                                <a asp-controller="Authors"
+                                   asp-action="Details"
+                                   asp-route-id="@media.AuthorId">
+                                    @media.AuthorName
+                                </a>
+                            </div>
+
+                            @* -------------------------------------------------
+                               EN: Current and proposed metadata comparison
+                               RU: Сравнение текущих и предложенных метаданных
+                               ------------------------------------------------- *@
+
+                            @if (media.IsMetadataReview)
+                            {
+                                <div class="border rounded p-3 mb-3">
+                                    <strong>
+                                        Текущая подпись
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.CurrentCaption)
+                                            ? "Не указана"
+                                            : media.CurrentCaption)
+                                    </p>
+                                </div>
+
+                                <div class="border rounded p-3 mb-3">
+                                    <strong>
+                                        Новая подпись
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.ProposedCaption)
+                                            ? "Не указана"
+                                            : media.ProposedCaption)
+                                    </p>
+                                </div>
+
+                                <div class="border rounded p-3 mb-3">
+                                    <strong>
+                                        Текущий alt-текст
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.CurrentAltText)
+                                            ? "Не указан"
+                                            : media.CurrentAltText)
+                                    </p>
+                                </div>
+
+                                <div class="border rounded p-3 mb-3">
+                                    <strong>
+                                        Новый alt-текст
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.ProposedAltText)
+                                            ? "Не указан"
+                                            : media.ProposedAltText)
+                                    </p>
+                                </div>
+                            }
+                            else
+                            {
+                                @* ---------------------------------------------
+                                   EN: Metadata of a newly uploaded image
+                                   RU: Метаданные нового изображения
+                                   --------------------------------------------- *@
+
+                                <div class="mb-3">
+                                    <strong>
+                                        Подпись
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.ProposedCaption)
+                                            ? "Не указана"
+                                            : media.ProposedCaption)
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong>
+                                        Alt-текст
+                                    </strong>
+
+                                    <p class="mb-0 mt-1">
+                                        @(string.IsNullOrWhiteSpace(
+                                            media.ProposedAltText)
+                                            ? "Не указан"
+                                            : media.ProposedAltText)
+                                    </p>
+                                </div>
+                            }
+
+                            @* -------------------------------------------------
+                               EN: File information
+                               RU: Информация о файле
+                               ------------------------------------------------- *@
+
+                            <div class="small text-muted text-break">
+                                @media.OriginalFileName
+                            </div>
+
+                            <div class="small text-muted">
+                                @media.ContentType ·
+                                @fileSizeMb.ToString("0.##") МБ
+                            </div>
+
+                            <div class="small text-muted mt-1">
+                                Отправлено:
+
+                                <time datetime="@submittedAt.ToUtcIsoString()"
+                                      data-local-datetime>
+                                    @submittedAt.ToString("dd.MM.yyyy HH:mm")
+                                </time>
+                            </div>
+                        </div>
+
+                        @* -----------------------------------------------------
+                           EN: Moderation decision forms
+                           RU: Формы решения модератора
+                           ----------------------------------------------------- *@
+
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid gap-3">
+                                <form asp-controller="PromptMediaModeration"
+                                      asp-action="Approve"
+                                      asp-route-id="@media.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="returnPage"
+                                           value="@Model.Page" />
+
+                                    <button type="submit"
+                                            class="btn btn-success w-100"
+                                            onclick="return confirm('@approveConfirmation');">
+                                        @(media.IsMetadataReview
+                                            ? "Одобрить изменения"
+                                            : "Одобрить изображение")
+                                    </button>
+                                </form>
+
+                                <form asp-controller="PromptMediaModeration"
+                                      asp-action="Reject"
+                                      asp-route-id="@media.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="returnPage"
+                                           value="@Model.Page" />
+
+                                    <label for="moderationComment-@media.Id"
+                                           class="form-label">
+                                        Причина отклонения
+                                    </label>
+
+                                    <textarea id="moderationComment-@media.Id"
+                                              name="moderationComment"
+                                              class="form-control mb-2"
+                                              rows="3"
+                                              minlength="5"
+                                              maxlength="1000"
+                                              required
+                                              placeholder="Объясните автору, что необходимо исправить."></textarea>
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger w-100"
+                                            onclick="return confirm('@rejectConfirmation');">
+                                        @(media.IsMetadataReview
+                                            ? "Отклонить изменения"
+                                            : "Отклонить изображение")
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    }
+
+    @* -------------------------------------------------------------------------
+       EN: Moderation queue pagination
+       RU: Пагинация очереди модерации
+       ------------------------------------------------------------------------- *@
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="d-flex justify-content-center align-items-center gap-3 mt-4"
+             aria-label="Страницы очереди медиа">
+
+            @if (Model.Page > 1)
+            {
+                <a asp-route="PromptMediaModerationQueue"
+                   asp-route-page="@(Model.Page - 1)"
+                   class="btn btn-outline-secondary">
+                    Назад
+                </a>
+            }
+
+            <span>
+                Страница @Model.Page из @Model.TotalPages
+            </span>
+
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a asp-route="PromptMediaModerationQueue"
+                   asp-route-page="@(Model.Page + 1)"
+                   class="btn btn-outline-secondary">
+                    Далее
+                </a>
+            }
+        </nav>
+    }
+</section>

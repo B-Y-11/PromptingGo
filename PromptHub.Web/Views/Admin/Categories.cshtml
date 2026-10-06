@@ -1,0 +1,242 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Admin.CategoryAdministrationViewModel
+
+@{
+    ViewData["Title"] = "Категории";
+}
+
+<section class="admin-categories-page">
+    <header class="moderation-page-header admin-users-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Администрирование
+            </div>
+
+            <h1 class="moderation-page-title">
+                Категории
+            </h1>
+
+            <p class="moderation-page-description">
+                Управление разделами каталога.
+                Скрытые категории не показываются пользователям
+                в фильтрах и формах создания промпта.
+            </p>
+
+            <div class="moderation-report-links">
+                <a asp-controller="Admin"
+                   asp-action="CreateCategory"
+                   class="btn btn-primary btn-sm">
+                    Создать категорию
+                </a>
+
+                <a asp-controller="Admin"
+                   asp-action="Users"
+                   class="btn btn-outline-primary btn-sm">
+                    Пользователи
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Categories.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                категорий
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"]
+        is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Categories.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Категорий пока нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                Создайте первую категорию,
+                чтобы авторы могли добавлять промпты.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-category-list">
+            @foreach (var category in Model.Categories)
+            {
+                var stateClass =
+                    category.IsActive
+                        ? "category-active"
+                        : "category-hidden";
+
+                <article class="admin-category-card @stateClass">
+                    <div>
+                        <div class="admin-category-title-row">
+                            <h2>
+                                @category.Name
+                            </h2>
+
+                            @if (category.IsActive)
+                            {
+                                <span class="notebook-tag notebook-tag-green">
+                                    Активна
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="notebook-tag">
+                                    Скрыта
+                                </span>
+                            }
+                        </div>
+
+                        <div class="admin-category-slug">
+                            /prompts?category=@category.Slug
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            category.Description))
+                        {
+                            <p class="admin-category-description">
+                                @category.Description
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="admin-category-description text-muted">
+                                Описание не заполнено.
+                            </p>
+                        }
+
+                        <div class="admin-category-meta">
+                            @if (!string.IsNullOrWhiteSpace(
+                                category.ParentName))
+                            {
+                                <span>
+                                    Родитель:
+                                    @category.ParentName
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    Корневая категория
+                                </span>
+                            }
+
+                            <span>
+                                Порядок:
+                                @category.SortOrder
+                            </span>
+
+                            <span>
+                                Создана:
+
+                                <time datetime="@category.CreatedAtUtc.ToUtcIsoString()"
+                                      data-local-date>
+                                    @category.CreatedAtUtc.ToString("dd.MM.yyyy")
+                                </time>
+                            </span>
+
+                            @if (category.UpdatedAtUtc.HasValue)
+                            {
+                                <span>
+                                    Обновлена:
+
+                                    <time datetime="@category.UpdatedAtUtc.ToUtcIsoString()"
+                                          data-local-date>
+                                        @category.UpdatedAtUtc.Value.ToString("dd.MM.yyyy")
+                                    </time>
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="admin-category-stats">
+                        <div class="admin-user-stat">
+                            <span>
+                                Всего
+                            </span>
+
+                            <strong>
+                                @category.TotalPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Опубликовано
+                            </span>
+
+                            <strong>
+                                @category.PublishedPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Скрыто
+                            </span>
+
+                            <strong>
+                                @category.ArchivedPromptsCount
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="admin-category-actions">
+                        <a asp-controller="Admin"
+                           asp-action="EditCategory"
+                           asp-route-id="@category.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            Редактировать
+                        </a>
+
+                        <form asp-controller="Admin"
+                              asp-action="ToggleCategory"
+                              asp-route-id="@category.Id"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            @if (category.IsActive)
+                            {
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Скрыть категорию? Она исчезнет из фильтров и форм создания.');">
+                                    Скрыть
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit"
+                                        class="btn btn-primary btn-sm"
+                                        onclick="return confirm('Вернуть категорию в каталог?');">
+                                    Вернуть
+                                </button>
+                            }
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

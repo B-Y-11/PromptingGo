@@ -1,0 +1,89 @@
+﻿@using PromptHub.Web.Services.Privacy
+@inject ICookieConsentService CookieConsentService
+
+@{
+    var showCookieBanner =
+        !CookieConsentService.HasChoice(
+            Context);
+
+    var returnUrl =
+        $"{Context.Request.PathBase}" +
+        $"{Context.Request.Path}" +
+        $"{Context.Request.QueryString}";
+}
+
+@if (showCookieBanner)
+{
+    <aside class="cookie-consent"
+           role="dialog"
+           aria-label="Настройки cookie"
+           aria-live="polite">
+
+        <div class="cookie-consent-content">
+
+            <div class="cookie-consent-text">
+                <strong>
+                    Cookie на PromptingGo
+                </strong>
+
+                <p class="mb-0">
+                    Мы используем необходимые cookie
+                    для входа, безопасности и работы сайта.
+
+                    С вашего разрешения PromptingGo также
+                    будет использовать отдельный cookie
+                    для статистики просмотров
+                    и копирований промптов.
+
+                    <a href="@Url.RouteUrl("LegalCookies")">
+                        Подробнее
+                    </a>
+                </p>
+            </div>
+
+            <div class="cookie-consent-actions">
+
+                <form method="post"
+                      action="@Url.RouteUrl(
+                                              "LegalSetCookiePreference")">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="preference"
+                           value="necessary" />
+
+                    <input type="hidden"
+                           name="returnUrl"
+                           value="@returnUrl" />
+
+                    <button type="submit"
+                            class="btn btn-outline-secondary">
+                        Только необходимые
+                    </button>
+                </form>
+
+                <form method="post"
+                      action="@Url.RouteUrl(
+                                              "LegalSetCookiePreference")">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="preference"
+                           value="analytics" />
+
+                    <input type="hidden"
+                           name="returnUrl"
+                           value="@returnUrl" />
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Разрешить статистику
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </aside>
+}

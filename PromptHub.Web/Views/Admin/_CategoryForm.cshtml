@@ -1,0 +1,143 @@
+﻿@model PromptHub.Web.Models.ViewModels.Admin.AdminCategoryEditorViewModel
+
+<section class="admin-category-form-page">
+    <main class="identity-sheet admin-category-form-sheet">
+        <div class="identity-kicker">
+            Категории каталога
+        </div>
+
+        <h1 class="identity-title">
+            @Model.PageTitle
+        </h1>
+
+        <p class="identity-description">
+            Категория используется в фильтрах каталога
+            и при создании нового промпта.
+        </p>
+
+        @if (Model.IsEditMode &&
+             !string.IsNullOrWhiteSpace(Model.CurrentSlug))
+        {
+            <div class="admin-category-current-slug">
+                Текущий адрес:
+                <strong>
+                    @Model.CurrentSlug
+                </strong>
+
+                <span>
+                    Slug не меняется автоматически,
+                    чтобы не ломать уже существующие ссылки.
+                </span>
+            </div>
+        }
+
+        <form method="post"
+              class="identity-form">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger">
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Input.Name"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Input.Name"
+                       class="form-control"
+                       placeholder="Например: Учёба" />
+
+                <span asp-validation-for="Input.Name"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Input.Description"
+                       class="form-label">
+                </label>
+
+                <textarea asp-for="Input.Description"
+                          class="form-control"
+                          rows="4"
+                          maxlength="500"
+                          placeholder="Коротко опишите, для каких промптов нужна категория."></textarea>
+
+                <span asp-validation-for="Input.Description"
+                      class="text-danger">
+                </span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <label asp-for="Input.ParentId"
+                           class="form-label">
+                    </label>
+
+                    <select asp-for="Input.ParentId"
+                            asp-items="Model.ParentCategoryOptions"
+                            class="form-select">
+
+                        <option value="">
+                            Без родительской категории
+                        </option>
+                    </select>
+
+                    <span asp-validation-for="Input.ParentId"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="col-md-5">
+                    <label asp-for="Input.SortOrder"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.SortOrder"
+                           class="form-control"
+                           type="number" />
+
+                    <span asp-validation-for="Input.SortOrder"
+                          class="text-danger">
+                    </span>
+                </div>
+            </div>
+
+            <div class="admin-category-active-row">
+                <div class="form-check">
+                    <input asp-for="Input.IsActive"
+                           class="form-check-input" />
+
+                    <label asp-for="Input.IsActive"
+                           class="form-check-label">
+                    </label>
+                </div>
+
+                <div class="form-text">
+                    Если снять галочку, категория не будет видна
+                    пользователям в фильтрах и формах создания.
+                </div>
+            </div>
+
+            <div class="account-form-actions">
+                <button type="submit"
+                        class="btn btn-primary">
+                    @Model.SubmitButtonText
+                </button>
+
+                <a asp-controller="Admin"
+                   asp-action="Categories"
+                   class="btn btn-outline-secondary">
+                    Назад к категориям
+                </a>
+            </div>
+        </form>
+    </main>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

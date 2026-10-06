@@ -1,0 +1,694 @@
+﻿@using PromptHub.Web.Models.Enums
+@model PromptHub.Web.Models.ViewModels.Prompts.CreatePromptViewModel
+
+<div asp-validation-summary="All"
+     class="alert alert-danger prompt-form-validation">
+</div>
+
+<section class="prompt-form-section">
+    <div class="prompt-form-section-header">
+        <span class="prompt-form-section-number">
+            1
+        </span>
+
+        <div>
+            <h2 class="prompt-form-section-title">
+                Основная информация
+            </h2>
+
+            <p class="prompt-form-section-description">
+                Объясните, для какой задачи предназначен промпт.
+            </p>
+        </div>
+    </div>
+
+    <div class="prompt-form-grid">
+        <div class="prompt-form-field prompt-form-field-wide">
+            <label asp-for="Title"
+                   class="form-label">
+            </label>
+
+            <input asp-for="Title"
+                   class="form-control"
+                   placeholder="Например: План курсовой работы" />
+
+            <span asp-validation-for="Title"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <div class="prompt-form-field prompt-form-field-wide">
+            <label asp-for="Summary"
+                   class="form-label">
+            </label>
+
+            <textarea asp-for="Summary"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Коротко опишите результат, который получит пользователь."></textarea>
+
+            <span asp-validation-for="Summary"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <div class="prompt-form-field">
+            <label asp-for="CategoryId"
+                   class="form-label">
+            </label>
+
+            <select asp-for="CategoryId"
+                    asp-items="Model.Categories"
+                    class="form-select">
+
+                <option value="0">
+                    Выберите категорию
+                </option>
+            </select>
+
+            <span asp-validation-for="CategoryId"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <div class="prompt-form-field prompt-form-field-wide prompt-tag-picker-section">
+            <label class="form-label">
+                Теги
+            </label>
+
+            @if (Model.TagOptions.Count > 0)
+            {
+                <div class="prompt-tag-picker">
+                    @foreach (var tag in Model.TagOptions)
+                    {
+                        var checkboxId =
+                            $"tag_{tag.Value}";
+
+                        <label class="prompt-tag-option"
+                               for="@checkboxId">
+
+                            <input id="@checkboxId"
+                                   type="checkbox"
+                                   name="SelectedTagIds"
+                                   value="@tag.Value"
+                                   checked="@tag.Selected" />
+
+                            <span>
+                                #@tag.Text
+                            </span>
+                        </label>
+                    }
+                </div>
+
+                <div class="form-text">
+                    Можно выбрать до 5 тегов.
+                    Они помогут точнее находить промпт.
+                </div>
+            }
+            else
+            {
+                <div class="prompt-tag-empty">
+                    Активных тегов пока нет.
+                    Администратор может добавить их в разделе «Теги».
+                </div>
+            }
+
+            <span asp-validation-for="SelectedTagIds"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <div class="prompt-form-field">
+            <label asp-for="Difficulty"
+                   class="form-label">
+            </label>
+
+            <select asp-for="Difficulty"
+                    class="form-select">
+
+                <option value="@PromptDifficulty.Beginner">
+                    Для новичков
+                </option>
+
+                <option value="@PromptDifficulty.Intermediate">
+                    Средний
+                </option>
+
+                <option value="@PromptDifficulty.Advanced">
+                    Продвинутый
+                </option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<section class="prompt-form-section">
+    <div class="prompt-form-section-header">
+        <span class="prompt-form-section-number">
+            2
+        </span>
+
+        <div>
+            <h2 class="prompt-form-section-title">
+                Готовый промпт
+            </h2>
+
+            <p class="prompt-form-section-description">
+                Полный текст, который посетитель сможет
+                сразу скопировать без настройки.
+            </p>
+        </div>
+    </div>
+
+    <div class="prompt-form-field">
+        <label asp-for="ReadyText"
+               class="form-label">
+        </label>
+
+        <textarea asp-for="ReadyText"
+                  class="form-control ready-prompt-editor"
+                  rows="15"
+                  placeholder="Вставьте полностью готовый промпт..."></textarea>
+
+        <span asp-validation-for="ReadyText"
+              class="text-danger">
+        </span>
+
+        <div class="form-text">
+            Не оставляйте внутри технические обозначения.
+            Этот вариант должен быть готов к использованию.
+        </div>
+    </div>
+</section>
+
+<section class="prompt-form-section">
+    <div class="prompt-form-section-header">
+        <span class="prompt-form-section-number">
+            3
+        </span>
+
+        <div>
+            <h2 class="prompt-form-section-title">
+                Настройка под пользователя
+            </h2>
+
+            <p class="prompt-form-section-description">
+                Дополнительный конструктор можно добавить,
+                если части промпта должны меняться.
+            </p>
+        </div>
+    </div>
+
+    <details class="constructor-help">
+    <summary class="constructor-help-summary">
+        <span class="constructor-help-mark">
+            ?
+        </span>
+
+        <span>
+            Что такое конструктор и как он работает?
+        </span>
+
+        <span class="constructor-help-chevron"
+              aria-hidden="true">
+            ↓
+        </span>
+    </summary>
+
+    <div class="constructor-help-body">
+        <div class="constructor-help-intro">
+            <h3>
+                Конструктор — это настраиваемая версия вашего промпта
+            </h3>
+
+            <p>
+                Вы заранее определяете, какие части текста
+                пользователь сможет менять.
+                Вместо ручного редактирования промпта
+                он увидит обычные понятные поля.
+            </p>
+        </div>
+
+        <div class="constructor-help-flow">
+            <div class="constructor-help-step">
+                <span>
+                    1
+                </span>
+
+                <div>
+                    <strong>
+                        Напишите шаблон
+                    </strong>
+
+                    <p>
+                        В поле «Текст настраиваемой версии»
+                        напишите промпт так, как он должен
+                        выглядеть после настройки.
+                    </p>
+                </div>
+            </div>
+
+            <div class="constructor-help-step">
+                <span>
+                    2
+                </span>
+
+                <div>
+                    <strong>
+                        Добавьте изменяемые места
+                    </strong>
+
+                    <p>
+                        Поставьте курсор в нужное место,
+                        нажмите «+ Добавить поле»
+                        и создайте, например,
+                        «Тема статьи».
+                    </p>
+                </div>
+            </div>
+
+            <div class="constructor-help-step">
+                <span>
+                    3
+                </span>
+
+                <div>
+                    <strong>
+                        PromptingGo вставит маркер
+                    </strong>
+
+                    <p>
+                        В вашем шаблоне появится
+                        <code>[Тема статьи]</code>.
+                        Пользователь этот технический маркер
+                        не увидит — вместо него он получит
+                        поле для заполнения.
+                    </p>
+                </div>
+            </div>
+
+            <div class="constructor-help-step">
+                <span>
+                    4
+                </span>
+
+                <div>
+                    <strong>
+                        Пользователь заполнит поля
+                    </strong>
+
+                    <p>
+                        PromptingGo подставит введённые
+                        значения в ваш шаблон
+                        и соберёт готовый промпт.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="constructor-help-example">
+            <div class="constructor-help-example-title">
+                Пример
+            </div>
+
+            <div class="constructor-help-example-grid">
+                <div class="constructor-help-example-side">
+                    <span class="constructor-help-example-label">
+                        Вы пишете шаблон
+                    </span>
+
+                    <div class="constructor-help-paper">
+                        Выступи в роли редактора.<br />
+                        Напиши статью на тему
+                        <strong>[Тема статьи]</strong>.<br />
+                        Используй 
+                            <strong>[Стиль]</strong> стиль.
+                    </div>
+                </div>
+
+                <div class="constructor-help-example-arrow"
+                     aria-hidden="true">
+                    →
+                </div>
+
+                <div class="constructor-help-example-side">
+                    <span class="constructor-help-example-label">
+                        Пользователь увидит
+                    </span>
+
+                    <div class="constructor-help-fields">
+                        <div>
+                            <span>
+                                Тема статьи *
+                            </span>
+
+                            <strong>
+                                Польза сна
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                Стиль *
+                            </span>
+
+                            <strong>
+                                Научно-популярный
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="constructor-help-result">
+                <span>
+                    Получится
+                </span>
+
+                <p>
+                    Выступи в роли редактора.
+                    Напиши статью на тему «Польза сна».
+                    Используй научно-популярный стиль.
+                </p>
+            </div>
+        </div>
+
+        <div class="constructor-help-rules">
+            <div>
+                <strong>
+                    Обязательное поле
+                </strong>
+
+                <span>
+                    Пользователь должен его заполнить.
+                </span>
+            </div>
+
+            <div>
+                <strong>
+                    Необязательное поле
+                </strong>
+
+                <span>
+                    Если оставить его пустым,
+                    связанная строка не попадёт
+                    в итоговый промпт.
+                </span>
+            </div>
+
+            <div>
+                <strong>
+                    Выбор из списка
+                </strong>
+
+                <span>
+                    Добавьте минимум два варианта,
+                    по одному на строку.
+                </span>
+            </div>
+        </div>
+
+        <div class="constructor-help-warning">
+            <span class="constructor-help-warning-label">
+                Важно
+            </span>
+
+            <p>
+                Необязательное поле размещайте
+                на отдельной строке шаблона.
+                Так PromptingGo сможет полностью убрать
+                эту строку, если пользователь
+                ничего не заполнит.
+            </p>
+        </div>
+
+        <a asp-route="HelpIndex"
+           asp-fragment="author-constructor"
+           class="constructor-help-link">
+            Подробная инструкция для авторов →
+        </a>
+    </div>
+</details>
+
+    <div class="constructor-toggle-note">
+        <input asp-for="EnableConstructor"
+               class="form-check-input"
+               id="enableConstructor" />
+
+        <label asp-for="EnableConstructor"
+               class="form-check-label">
+
+            <span class="constructor-toggle-title">
+                Добавить настраиваемую версию
+            </span>
+
+            <span class="constructor-toggle-description">
+                Пользователь заполнит понятные поля,
+                а система автоматически соберёт итоговый текст.
+            </span>
+        </label>
+    </div>
+
+    <input asp-for="ConstructorFieldsJson"
+           type="hidden"
+           id="constructorFieldsJson" />
+
+    <div id="promptFormEditor"
+         data-text-type="@((int)PromptVariableType.Text)"
+         data-textarea-type="@((int)PromptVariableType.TextArea)"
+         data-number-type="@((int)PromptVariableType.Number)"
+         data-select-type="@((int)PromptVariableType.Select)"
+         data-checkbox-type="@((int)PromptVariableType.Checkbox)">
+
+        <div id="constructorSection"
+             class="constructor-editor-sheet">
+
+            <label asp-for="TemplateText"
+                   class="form-label">
+                Текст настраиваемой версии
+            </label>
+
+            <textarea asp-for="TemplateText"
+                      class="form-control constructor-template-editor"
+                      rows="14"
+                      placeholder="Напишите обычный текст. Заполняемые поля добавляются кнопкой ниже."></textarea>
+
+            <span asp-validation-for="TemplateText"
+                  class="text-danger">
+            </span>
+
+            <div class="constructor-toolbar">
+                <p class="constructor-toolbar-hint">
+                    Поставьте курсор в нужное место текста
+                    и добавьте заполняемое поле.
+                </p>
+
+                <button type="button"
+                        id="openFieldEditorButton"
+                        class="btn btn-outline-primary">
+                    + Добавить поле
+                </button>
+            </div>
+
+            <div class="visual-fields-heading">
+                <h3>
+                    Добавленные поля
+                </h3>
+
+                <span class="notebook-tag notebook-tag-blue">
+                    Видны пользователю
+                </span>
+            </div>
+
+            <div id="fieldsEmptyState"
+                 class="visual-fields-empty">
+                Заполняемые поля пока не добавлены.
+            </div>
+
+            <div id="fieldsList"
+                 class="visual-fields-list">
+            </div>
+
+            <div id="fieldEditor"
+                 class="field-editor-sheet d-none">
+
+                <h3 id="fieldEditorTitle"
+                    class="field-editor-heading">
+                    Новое поле
+                </h3>
+
+                <div id="fieldEditorError"
+                     class="alert alert-danger field-editor-error d-none"
+                     role="alert"
+                     aria-live="polite">
+                </div>
+
+                <div class="prompt-form-grid">
+                    <div class="prompt-form-field">
+                        <label for="fieldLabel"
+                               class="form-label">
+                            Название поля
+                        </label>
+
+                        <input id="fieldLabel"
+                               type="text"
+                               maxlength="150"
+                               class="form-control"
+                               placeholder="Например: Тема статьи" />
+                    </div>
+
+                    <div class="prompt-form-field">
+                        <label for="fieldType"
+                               class="form-label">
+                            Тип поля
+                        </label>
+
+                        <select id="fieldType"
+                                class="form-select">
+
+                            <option value="@((int)PromptVariableType.Text)">
+                                Короткий текст
+                            </option>
+
+                            <option value="@((int)PromptVariableType.TextArea)">
+                                Большой текст
+                            </option>
+
+                            <option value="@((int)PromptVariableType.Number)">
+                                Число
+                            </option>
+
+                            <option value="@((int)PromptVariableType.Select)">
+                                Выбор из списка
+                            </option>
+
+                            <option value="@((int)PromptVariableType.Checkbox)">
+                                Да или нет
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="prompt-form-field prompt-form-field-wide">
+                        <div class="form-check">
+                            <input id="fieldRequired"
+                                   type="checkbox"
+                                   class="form-check-input"
+                                   checked />
+
+                            <label for="fieldRequired"
+                                   class="form-check-label">
+                                Обязательно для заполнения
+                            </label>
+                        </div>
+
+                        <div class="form-text">
+                            Необязательное поле лучше размещать
+                            на отдельной строке промпта.
+                        </div>
+                    </div>
+
+                    <div class="prompt-form-field">
+                        <label for="fieldPlaceholder"
+                               class="form-label">
+                            Пример заполнения
+                        </label>
+
+                        <input id="fieldPlaceholder"
+                               type="text"
+                               maxlength="300"
+                               class="form-control"
+                               placeholder="Разработка сайта аптеки" />
+                    </div>
+
+                    <div class="prompt-form-field">
+                        <label for="fieldHelpText"
+                               class="form-label">
+                            Подсказка пользователю
+                        </label>
+
+                        <input id="fieldHelpText"
+                               type="text"
+                               maxlength="500"
+                               class="form-control"
+                               placeholder="Укажите точную тему работы" />
+                    </div>
+
+                    <div id="fieldOptionsGroup"
+                         class="prompt-form-field prompt-form-field-wide d-none">
+
+                        <label for="fieldOptions"
+                               class="form-label">
+                            Варианты выбора
+                        </label>
+
+                        <textarea id="fieldOptions"
+                                  class="form-control"
+                                  rows="5"
+                                  placeholder="Деловой&#10;Дружелюбный&#10;Научный"></textarea>
+
+                        <div class="form-text">
+                            Один вариант на каждой строке.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="button"
+                            id="saveFieldButton"
+                            class="btn btn-primary">
+                        Сохранить и вставить
+                    </button>
+
+                    <button type="button"
+                            id="cancelFieldButton"
+                            class="btn btn-outline-secondary">
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="prompt-form-section">
+    <div class="prompt-form-section-header">
+        <span class="prompt-form-section-number">
+            4
+        </span>
+
+        <div>
+            <h2 class="prompt-form-section-title">
+                Инструкция и пример
+            </h2>
+
+            <p class="prompt-form-section-description">
+                Помогите посетителю правильно применить промпт
+                и покажите ожидаемый результат.
+            </p>
+        </div>
+    </div>
+
+    <div class="prompt-form-grid">
+        <div class="prompt-form-field">
+            <label asp-for="UsageInstructions"
+                   class="form-label">
+            </label>
+
+            <textarea asp-for="UsageInstructions"
+                      class="form-control"
+                      rows="9"
+                      placeholder="Например: вставьте промпт в ChatGPT и ответьте на уточняющие вопросы."></textarea>
+        </div>
+
+        <div class="prompt-form-field">
+            <label asp-for="ExampleResult"
+                   class="form-label">
+            </label>
+
+            <textarea asp-for="ExampleResult"
+                      class="form-control"
+                      rows="9"
+                      placeholder="Добавьте пример ответа нейросети."></textarea>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PromptHub.Tests/PromptHub.Tests.csproj" />
+  <Project Path="PromptHub.Web/PromptHub.Web.csproj" />
+</Solution>

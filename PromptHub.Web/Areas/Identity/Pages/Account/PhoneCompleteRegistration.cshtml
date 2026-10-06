@@ -1,0 +1,136 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.PhoneCompleteRegistrationModel
+
+@{
+    ViewData["Title"] = "Завершение регистрации";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+
+            <div class="identity-kicker">
+                Номер подтверждён
+            </div>
+
+            <h1 class="identity-title">
+                Завершите регистрацию
+            </h1>
+
+            <p class="identity-description">
+                Номер @Model.MaskedPhoneNumber подтверждён.
+                Осталось выбрать имя, которое увидят другие пользователи.
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <input asp-for="Continuation"
+                       type="hidden" />
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@Model.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.DisplayName"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.DisplayName"
+                           class="form-control"
+                           autocomplete="name"
+                           placeholder="Например: Иван" />
+
+                    <span asp-validation-for="Input.DisplayName"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Это имя будет отображаться рядом с вашими промптами.
+                    </div>
+                </div>
+
+                <div class="mt-4">
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Input.AcceptTerms"
+                               class="form-check-input"
+                               required />
+
+                        <label class="form-check-label"
+                               for="@Html.IdFor(model => model.Input.AcceptTerms)">
+
+                            Я принимаю
+
+                            <a href="@Url.RouteUrl("LegalTerms")"
+                               target="_blank"
+                               rel="noopener">
+                                Пользовательское соглашение
+                            </a>
+
+                            и
+
+                            <a href="@Url.RouteUrl("LegalContentRules")"
+                               target="_blank"
+                               rel="noopener">
+                                Правила публикации
+                            </a>.
+                        </label>
+
+                        <span asp-validation-for="Input.AcceptTerms"
+                              class="text-danger d-block">
+                        </span>
+                    </div>
+
+                    <div class="form-check">
+                        <input asp-for="Input.AcceptPersonalData"
+                               class="form-check-input"
+                               required />
+
+                        <label class="form-check-label"
+                               for="@Html.IdFor(model => model.Input.AcceptPersonalData)">
+
+                            Я даю отдельное
+
+                            <a href="@Url.RouteUrl("LegalPersonalDataConsent")"
+                               target="_blank"
+                               rel="noopener">
+                                согласие на обработку персональных данных
+                            </a>
+
+                            и ознакомлен с
+
+                            <a href="@Url.RouteUrl("LegalPrivacy")"
+                               target="_blank"
+                               rel="noopener">
+                                Политикой обработки персональных данных
+                            </a>.
+                        </label>
+
+                        <span asp-validation-for="Input.AcceptPersonalData"
+                              class="text-danger d-block">
+                        </span>
+                    </div>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Создать аккаунт
+                </button>
+            </form>
+
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

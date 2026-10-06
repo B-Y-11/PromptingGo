@@ -1,0 +1,81 @@
+﻿@page
+@model PromptHub.Web.Areas.Identity.Pages.Account.PhoneModel
+
+@{
+    ViewData["Title"] = "Вход по телефону";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<section class="identity-page">
+    <div class="identity-layout">
+        <main class="identity-sheet">
+
+            <div class="identity-kicker">
+                Вход без пароля
+            </div>
+
+            <h1 class="identity-title">
+                Продолжить по телефону
+            </h1>
+
+            <p class="identity-description">
+                Введите номер телефона.
+                Мы отправим одноразовый код подтверждения.
+            </p>
+
+            <form method="post"
+                  class="identity-form">
+
+                <input type="hidden"
+                       name="returnUrl"
+                       value="@Model.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.PhoneNumber"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Input.PhoneNumber"
+                           class="form-control"
+                           type="tel"
+                           autocomplete="tel"
+                           inputmode="tel"
+                           placeholder="+7 999 123-45-67" />
+
+                    <span asp-validation-for="Input.PhoneNumber"
+                          class="text-danger">
+                    </span>
+
+                    <div class="form-text">
+                        Используйте международный формат,
+                        например +7, +992, +993 или +86.
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary identity-submit-button">
+                    Получить код
+                </button>
+            </form>
+
+            <div class="identity-footer-text">
+                Хотите войти по email?
+
+                <a asp-page="./Login"
+                   asp-route-returnUrl="@Model.ReturnUrl">
+                    Войти с паролем
+                </a>
+            </div>
+
+        </main>
+    </div>
+</section>
+
+@section Scripts
+{
+    <partial name="/Views/Shared/_ValidationScriptsPartial.cshtml" />
+}

@@ -1,0 +1,214 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Admin.TagAdministrationViewModel
+
+@{
+    ViewData["Title"] = "Теги";
+}
+
+<section class="admin-tags-page">
+    <header class="moderation-page-header admin-users-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Администрирование
+            </div>
+
+            <h1 class="moderation-page-title">
+                Теги
+            </h1>
+
+            <p class="moderation-page-description">
+                Теги уточняют назначение промпта
+                внутри основной категории.
+            </p>
+
+            <div class="moderation-report-links">
+                <a asp-controller="Admin"
+                   asp-action="CreateTag"
+                   class="btn btn-primary btn-sm">
+                    Создать тег
+                </a>
+
+                <a asp-controller="Admin"
+                   asp-action="Categories"
+                   class="btn btn-outline-primary btn-sm">
+                    Категории
+                </a>
+
+                <a asp-controller="Admin"
+                   asp-action="Users"
+                   class="btn btn-outline-primary btn-sm">
+                    Пользователи
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-queue-count">
+            <span class="moderation-queue-count-value">
+                @Model.Tags.Count
+            </span>
+
+            <span class="moderation-queue-count-label">
+                тегов
+            </span>
+        </div>
+    </header>
+
+    @if (TempData["SuccessMessage"]
+        is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    @if (Model.Tags.Count == 0)
+    {
+        <div class="moderation-empty-sheet">
+            <h2>
+                Тегов пока нет
+            </h2>
+
+            <p class="text-muted mb-0">
+                Создайте первые теги,
+                чтобы потом привязывать их к промптам.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-tag-list">
+            @foreach (var tag in Model.Tags)
+            {
+                var stateClass =
+                    tag.IsActive
+                        ? "tag-active"
+                        : "tag-hidden";
+
+                <article class="admin-tag-card @stateClass">
+                    <div>
+                        <div class="admin-tag-title-row">
+                            <h2>
+                                #@tag.Name
+                            </h2>
+
+                            @if (tag.IsActive)
+                            {
+                                <span class="notebook-tag notebook-tag-green">
+                                    Активен
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="notebook-tag">
+                                    Скрыт
+                                </span>
+                            }
+                        </div>
+
+                        <div class="admin-category-slug">
+                            /prompts?tag=@tag.Slug
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            tag.Description))
+                        {
+                            <p class="admin-category-description">
+                                @tag.Description
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="admin-category-description text-muted">
+                                Описание не заполнено.
+                            </p>
+                        }
+
+                        <div class="admin-category-meta">
+                            <span>
+                                Порядок:
+                                @tag.SortOrder
+                            </span>
+
+                            <span>
+                                Создан:
+
+                                <time datetime="@tag.CreatedAtUtc.ToUtcIsoString()"
+                                      data-local-date>
+                                    @tag.CreatedAtUtc.ToString("dd.MM.yyyy")
+                                </time>
+                            </span>
+
+                            @if (tag.UpdatedAtUtc.HasValue)
+                            {
+                                <span>
+                                    Обновлён:
+
+                                    <time datetime="@tag.UpdatedAtUtc.ToUtcIsoString()"
+                                          data-local-date>
+                                        @tag.UpdatedAtUtc.Value.ToString("dd.MM.yyyy")
+                                    </time>
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="admin-category-stats">
+                        <div class="admin-user-stat">
+                            <span>
+                                Всего
+                            </span>
+
+                            <strong>
+                                @tag.TotalPromptsCount
+                            </strong>
+                        </div>
+
+                        <div class="admin-user-stat">
+                            <span>
+                                Опубликовано
+                            </span>
+
+                            <strong>
+                                @tag.PublishedPromptsCount
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="admin-category-actions">
+                        <a asp-controller="Admin"
+                           asp-action="EditTag"
+                           asp-route-id="@tag.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            Редактировать
+                        </a>
+
+                        <form asp-controller="Admin"
+                              asp-action="ToggleTag"
+                              asp-route-id="@tag.Id"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            @if (tag.IsActive)
+                            {
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Скрыть тег? Он исчезнет из выбора при создании промпта.');">
+                                    Скрыть
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit"
+                                        class="btn btn-primary btn-sm"
+                                        onclick="return confirm('Вернуть тег?');">
+                                    Вернуть
+                                </button>
+                            }
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

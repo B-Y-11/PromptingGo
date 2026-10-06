@@ -1,0 +1,399 @@
+﻿@using PromptHub.Web.Extensions
+@model PromptHub.Web.Models.ViewModels.Moderation.ModerationDashboardViewModel
+
+@{
+    ViewData["Title"] = "Панель модерации";
+}
+
+<section class="moderation-dashboard-page">
+    <header class="moderation-page-header moderation-dashboard-header">
+        <div>
+            <div class="moderation-page-kicker">
+                Модерация
+            </div>
+
+            <h1 class="moderation-page-title">
+                Панель модерации
+            </h1>
+
+            <p class="moderation-page-description">
+                Быстрый обзор материалов,
+                которые требуют внимания модератора.
+            </p>
+
+            <div class="moderation-report-links">
+                <a asp-controller="Moderation"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    Очередь промптов
+                </a>
+
+                <a asp-controller="PromptMediaModeration"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    Медиа
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="Reports"
+                   class="btn btn-outline-primary btn-sm">
+                    Жалобы
+                </a>
+
+                <a asp-controller="CommentReportsModeration"
+                   asp-action="Index"
+                   class="btn btn-outline-primary">
+                    Жалобы на комментарии
+                </a>
+
+                <a asp-controller="Moderation"
+                   asp-action="ArchivedPrompts"
+                   class="btn btn-outline-primary btn-sm">
+                    Скрытые промпты
+                </a>
+            </div>
+        </div>
+
+        <div class="moderation-dashboard-total">
+            <span>
+                Требует внимания
+            </span>
+
+            <strong>
+                @(Model.PendingPromptsCount
+                      + Model.PendingMediaCount
+                      + Model.NewReportsCount
+                      + Model.OpenCommentReportCount)
+            </strong>
+        </div>
+    </header>
+
+    <div class="moderation-dashboard-stats">
+        <a asp-controller="Moderation"
+           asp-action="Index"
+           class="moderation-dashboard-stat-card">
+            <span>
+                На проверке
+            </span>
+
+            <strong>
+                @Model.PendingPromptsCount
+            </strong>
+
+            <small>
+                промптов ждут решения
+            </small>
+        </a>
+
+        <a asp-controller="PromptMediaModeration"
+           asp-action="Index"
+           class="moderation-dashboard-stat-card">
+            <span>
+                Медиа на проверке
+            </span>
+
+            <strong>
+                @Model.PendingMediaCount
+            </strong>
+
+            <small>
+                изображений ждут решения
+            </small>
+        </a>
+
+        <a asp-controller="Moderation"
+           asp-action="Reports"
+           class="moderation-dashboard-stat-card dashboard-stat-danger">
+            <span>
+                Новые жалобы
+            </span>
+
+            <strong>
+                @Model.NewReportsCount
+            </strong>
+
+            <small>
+                жалоб нужно обработать
+            </small>
+        </a>
+
+        <a asp-controller="CommentReportsModeration"
+           asp-action="Index"
+           class="moderation-dashboard-stat-card dashboard-stat-danger">
+            <span>
+                Жалобы на комментарии
+            </span>
+
+            <strong>
+                @Model.OpenCommentReportCount
+            </strong>
+
+            <small>
+                открытых обращений
+            </small>
+        </a>
+
+        <a asp-controller="Moderation"
+           asp-action="ArchivedPrompts"
+           class="moderation-dashboard-stat-card dashboard-stat-muted">
+            <span>
+                Скрытые промпты
+            </span>
+
+            <strong>
+                @Model.ArchivedPromptsCount
+            </strong>
+
+            <small>
+                материалов в архиве
+            </small>
+        </a>
+    </div>
+
+    <div class="moderation-dashboard-grid">
+        <section class="moderation-dashboard-panel">
+            <div class="moderation-dashboard-panel-header">
+                <h2>
+                    Последние промпты на проверке
+                </h2>
+
+                <a asp-controller="Moderation"
+                   asp-action="Index">
+                    Открыть все
+                </a>
+            </div>
+
+            @if (Model.PendingPrompts.Count == 0)
+            {
+                <div class="moderation-dashboard-empty">
+                    Сейчас нет промптов на проверке.
+                </div>
+            }
+            else
+            {
+                <div class="moderation-dashboard-list">
+                    @foreach (var prompt in Model.PendingPrompts)
+                    {
+                        <article class="moderation-dashboard-item">
+                            <div class="moderation-dashboard-item-tags">
+                                <span class="notebook-tag notebook-tag-blue">
+                                    @prompt.CategoryName
+                                </span>
+
+                                <span class="notebook-tag">
+                                    @prompt.DifficultyName
+                                </span>
+                            </div>
+
+                            @if (prompt.Tags.Count > 0)
+                            {
+                                <div class="moderation-prompt-tags">
+                                    @foreach (var tag in prompt.Tags)
+                                    {
+                                        <span class="prompt-tag-badge">
+                                            #@tag.Name
+                                        </span>
+                                    }
+                                </div>
+                            }
+
+                            <h3>
+                                @prompt.Title
+                            </h3>
+
+                            <p>
+                                @prompt.Summary
+                            </p>
+
+                            <div class="moderation-dashboard-item-meta">
+                                <span>
+                                    Автор:
+                                    @prompt.AuthorName
+                                </span>
+
+                                @if (prompt.SubmittedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        Отправлено:
+
+                                        <time datetime="@prompt.SubmittedAtUtc.ToUtcIsoString()"
+                                              data-local-datetime>
+                                            @prompt.SubmittedAtUtc.Value.ToString("dd.MM.yyyy HH:mm")
+                                        </time>
+                                    </span>
+                                }
+                            </div>
+
+                            <a asp-controller="Moderation"
+                               asp-action="Review"
+                               asp-route-id="@prompt.Id"
+                               class="btn btn-primary btn-sm">
+                                Проверить
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="moderation-dashboard-panel">
+            <div class="moderation-dashboard-panel-header">
+                <h2>
+                    Новые жалобы
+                </h2>
+
+                <a asp-controller="Moderation"
+                   asp-action="Reports">
+                    Открыть все
+                </a>
+            </div>
+
+            @if (Model.NewReports.Count == 0)
+            {
+                <div class="moderation-dashboard-empty">
+                    Новых жалоб нет.
+                </div>
+            }
+            else
+            {
+                <div class="moderation-dashboard-list">
+                    @foreach (var report in Model.NewReports)
+                    {
+                        <article class="moderation-dashboard-item dashboard-report-item">
+                            <div class="moderation-dashboard-item-tags">
+                                <span class="notebook-tag notebook-tag-red">
+                                    Жалоба
+                                </span>
+
+                                <span class="notebook-tag">
+                                    @report.ReasonName
+                                </span>
+                            </div>
+
+                            <h3>
+                                @report.PromptTitle
+                            </h3>
+
+                            @if (!string.IsNullOrWhiteSpace(report.Details))
+                            {
+                                <p>
+                                    @report.Details
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">
+                                    Пользователь не оставил комментарий.
+                                </p>
+                            }
+
+                            <div class="moderation-dashboard-item-meta">
+                                <span>
+                                    Отправитель:
+                                    @report.ReporterName
+                                </span>
+
+                                <span>
+                                    Дата:
+
+                                    <time datetime="@report.CreatedAtUtc.ToUtcIsoString()"
+                                          data-local-datetime>
+                                        @report.CreatedAtUtc.ToString("dd.MM.yyyy HH:mm")
+                                    </time>
+                                </span>
+                            </div>
+
+                            <a asp-controller="Moderation"
+                               asp-action="Reports"
+                               class="btn btn-outline-danger btn-sm">
+                                Перейти к жалобам
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="moderation-dashboard-panel dashboard-panel-wide">
+            <div class="moderation-dashboard-panel-header">
+                <h2>
+                    Последние скрытые промпты
+                </h2>
+
+                <a asp-controller="Moderation"
+                   asp-action="ArchivedPrompts">
+                    Открыть архив
+                </a>
+            </div>
+
+            @if (Model.ArchivedPrompts.Count == 0)
+            {
+                <div class="moderation-dashboard-empty">
+                    Скрытых промптов нет.
+                </div>
+            }
+            else
+            {
+                <div class="moderation-dashboard-list dashboard-archive-list">
+                    @foreach (var prompt in Model.ArchivedPrompts)
+                    {
+                        <article class="moderation-dashboard-item">
+                            <div class="moderation-dashboard-item-tags">
+                                <span class="notebook-tag">
+                                    Скрыт
+                                </span>
+                            </div>
+
+                            <h3>
+                                @prompt.Title
+                            </h3>
+
+                            @if (!string.IsNullOrWhiteSpace(prompt.ArchiveReason))
+                            {
+                                <p>
+                                    @prompt.ArchiveReason
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">
+                                    Причина скрытия не указана.
+                                </p>
+                            }
+
+                            <div class="moderation-dashboard-item-meta">
+                                <span>
+                                    Автор:
+                                    @prompt.AuthorName
+                                </span>
+
+                                <span>
+                                    Модератор:
+                                    @prompt.ArchivedByName
+                                </span>
+
+                                @if (prompt.ArchivedAtUtc.HasValue)
+                                {
+                                    <span>
+                                        Скрыто:
+
+                                        <time datetime="@prompt.ArchivedAtUtc.ToUtcIsoString()"
+                                              data-local-datetime>
+                                            @prompt.ArchivedAtUtc.Value.ToString("dd.MM.yyyy HH:mm")
+                                        </time>
+                                    </span>
+                                }
+                            </div>
+
+                            <a asp-controller="Moderation"
+                               asp-action="ArchivedPrompts"
+                               class="btn btn-outline-primary btn-sm">
+                                Открыть архив
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</section>
